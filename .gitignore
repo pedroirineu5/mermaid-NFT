@@ -1,0 +1,9 @@
+# Dependências
+/node_modules
+
+# Arquivos de build e cache do Hardhat
+/cache
+/artifacts
+
+# Arquivos de ambiente (informações sensíveis)
+.env

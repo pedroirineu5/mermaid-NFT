@@ -1,0 +1,77 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/devitruvius/Projects/mermaid-backend/contracts/MockMusicRegistry.sol": {
+      "lastModificationDate": 1735241154154,
+      "contentHash": "167598041ef9bb555387fecc0eb897b1",
+      "sourceName": "contracts/MockMusicRegistry.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.28"
+      ],
+      "artifacts": [
+        "MockMusicRegistry"
+      ]
+    },
+    "/home/devitruvius/Projects/mermaid-backend/contracts/SimpleEvent.sol": {
+      "lastModificationDate": 1735338827555,
+      "contentHash": "4a9586b1bd6013cee9876a0d6ba19db3",
+      "sourceName": "contracts/SimpleEvent.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "0.8.28"
+      ],
+      "artifacts": [
+        "SimpleEvent"
+      ]
+    }
+  }
+}
