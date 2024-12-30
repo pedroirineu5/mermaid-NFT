@@ -1,42 +1,8 @@
-# mermaid-NFT
+# React + Vite
 
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-# Padrão de commits
-Utilizaremos como padrão de commits o conventional commits, são basicamente uma formalização das mensagens de commits. Isso vai facilitar o acompanhamento de mudanças.
+Currently, two official plugins are available:
 
-````sh
-<tipo>(<escopo>): <descrição>
-````
-
-`<tipo>`: Descreve o propósito do commit(obrigatório)
-
-`<escopo>`: Mostra a área que o commit afeta.
-
-`<descrição>`: Descreve o que o commit realiza(obrigatório)
-    
-
-## Tipos comuns de commit 
-
-- `feat` : Para novas funcionalidades.
-
-- `fix` : Para correção de bugs.
-
-- `docs` : Para alterações na documentação.
-
-- `style` : Para formatação, estilo de código, sem mudanças no código de produção.
-
-- `refactor` : Para refatorações de código.
-
-- `test` : Para adição ou modificação de testes.
-
-- `chore` : Para tarefas de manutenção, como atualização de dependências.
-
-## Exemplos de Mensagens de Commit
-Aqui estão alguns exemplos de conventional commits
-
-```sh
-feat(login): adicionar funcionalidade de login 
-```
-```sh
-fix(api): corrigir erro de rota 
-```
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
