@@ -1,11 +1,21 @@
 const { Web3 } = require('web3');
+const oysterTokenContract = require('../artifacts/contracts/OysterToken.sol/OysterToken.json');
+const oysterVaultContract = require('../artifacts/contracts/OysterVault.sol/OysterVault.json');
 
-let contractInstance;
+const web3 = new Web3('http://127.0.0.1:7545');
+
+let oysterTokenInstance;
+let oysterVaultInstance;
 let deployerAccount;
 
-async function initializeBlockchainService(contractABI, contractAddress) {
-    const web3 = new Web3("http://127.0.0.1:7545"); // URL do Ganache
-    contractInstance = new web3.eth.Contract(contractABI, contractAddress);
+async function initializeBlockchainService() {
+    const networkId = await web3.eth.net.getId();
+
+    const deployedOysterTokenAddress = oysterTokenContract.networks[networkId].address;
+    const deployedOysterVaultAddress = oysterVaultContract.networks[networkId].address;
+
+    oysterTokenInstance = new web3.eth.Contract(oysterTokenContract.abi, deployedOysterTokenAddress);
+    oysterVaultInstance = new web3.eth.Contract(oysterVaultContract.abi, deployedOysterVaultAddress);
 
     const accounts = await web3.eth.getAccounts();
     deployerAccount = accounts[0];
@@ -13,23 +23,23 @@ async function initializeBlockchainService(contractABI, contractAddress) {
     console.log("Blockchain service initialized with deployer account:", deployerAccount);
 }
 
-async function registerSong(songId, metadataURI) {
-    if (!contractInstance || !deployerAccount) {
+async function validateMusicContract(addressMusicContract) {
+    if (!oysterTokenInstance || !deployerAccount) {
         throw new Error("Blockchain service not initialized.");
     }
 
-    console.log("Registering song:", songId, metadataURI);
-    const result = await contractInstance.methods.registerSong(songId, metadataURI).send({ from: deployerAccount });
+    console.log("Validating music contract:", addressMusicContract);
+    const result = await oysterTokenInstance.methods.validateMusicContracts(addressMusicContract).send({ from: deployerAccount });
     console.log("Transaction result:", result);
     return result.transactionHash;
 }
 
-async function grantLicense(songId, licenseId) {
-    if (!contractInstance || !deployerAccount) {
+async function buyTokens(amount) {
+    if (!oysterTokenInstance || !deployerAccount) {
         throw new Error("Blockchain service not initialized.");
     }
 
-    console.log("Granting license:", songId, licenseId); // Log para depuração
+    console.log("Buying tokens, amount (in Wei):", amount);
     const result = await contractInstance.methods.grantLicense(songId, licenseId).send({ from: deployerAccount });
     console.log("Transaction result:", result);
     return result.transactionHash;
@@ -37,6 +47,6 @@ async function grantLicense(songId, licenseId) {
 
 module.exports = {
     initializeBlockchainService,
-    registerSong,
-    grantLicense,
+    validateMusicContract,
+    buyTokens,
 };

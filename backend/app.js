@@ -1,10 +1,8 @@
 const express = require('express');
-const { initializeBlockchainService, registerSong, grantLicense } = require('./services/blockchainService');
+const { initializeBlockchainService, validateMusicContract, buyTokens } = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
-const contractABI = require('./artifacts/contracts/MockMusicRegistry.sol/MockMusicRegistry.json').abi;
 
 require('dotenv').config();
-const contractAddress = process.env.CONTRACT_ADDRESS;
 
 const app = express();
 const port = 3000;
@@ -13,31 +11,32 @@ app.use(express.json());
 
 async function startApp() {
     try {
-        await initializeBlockchainService(contractABI, contractAddress);
+        await initializeBlockchainService();
         console.log("Blockchain service initialized.");
 
-        await listenToEvents();
+        listenToEvents();
         console.log("Event listener started.");
 
-        app.post('/register-song', async (req, res) => {
-            const { songId, metadataURI } = req.body;
+        // Validar Contrato da Música
+        app.post('/validate-music-contract', async (req, res) => {
+            const { addressMusicContract } = req.body;
             try {
-                const transactionHash = await registerSong(songId, metadataURI);
-                res.send(`Song registered! Transaction hash: ${transactionHash}`);
+                const transactionHash = await validateMusicContract(addressMusicContract);
+                res.send(`Music contract validated! Transaction hash: ${transactionHash}`);
             } catch (error) {
                 console.error(error);
-                res.status(500).send(`Error registering song: ${error.message}`);
+                res.status(500).send(`Error validating music contract: ${error.message}`);
             }
         });
 
-        app.post('/grant-license', async (req, res) => {
-            const { songId, licenseId } = req.body;
+        app.post('/buy-tokens', async (req, res) => {
+            const { amount } = req.body;
             try {
-                const transactionHash = await grantLicense(songId, licenseId);
-                res.send(`License granted! Transaction hash: ${transactionHash}`);
+                const transactionHash = await buyTokens({ value: amount });
+                res.send(`Tokens purchased! Transaction hash: ${transactionHash}`);
             } catch (error) {
                 console.error(error);
-                res.status(500).send(`Error granting license: ${error.message}`);
+                res.status(500).send(`Error purchasing tokens: ${error.message}`);
             }
         });
 
