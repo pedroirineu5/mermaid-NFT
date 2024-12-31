@@ -10,8 +10,10 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
     OysterVault public vault;
     mapping(address => bool) public validMusicContracts;
 
-    event validatedMusicContract(address indexed _address, bool valid);
+    event ValidatedMusicContract(address indexed _address, bool valid); // Renomeado
     event WeiRefunded(address indexed to, uint256 gweiAmount);
+    event Buy100OSTToMusicContractCalled(address caller, uint256 value);
+    event Buy100OSTToMusicContractFailed(address caller, uint256 value, string reason);
 
     modifier onlyValidMusicContract() {
         require(validMusicContracts[msg.sender], "This function can only be called by a valid MusicContract address");
@@ -24,42 +26,43 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         ERC20Permit("OysterToken")
     {}
 
-    // Função para configurar o endereço do Vault após a implantação
     function setVault(OysterVault _vault) external onlyOwner {
-        require(address(vault) == address(0), "Vault already set"); // Garante que o Vault ainda não foi definido
-        require(address(_vault) != address(0), "Invalid vault address"); // Garante que o endereço do Vault é válido
+        require(address(vault) == address(0), "Vault already set");
+        require(address(_vault) != address(0), "Invalid vault address");
         vault = _vault;
     }
 
-    // Mint para o Vault
     function mintToVault(uint256 amount) external onlyOwner {
-        require(address(vault) != address(0), "Vault address not set"); // Garante que o endereço do Vault foi definido
+        require(address(vault) != address(0), "Vault address not set");
         _mint(address(vault), amount);
     }
 
-    // Adicionar o endereço e validar de um contract de música
     function validateMusicContracts(address addressMusicContract) external onlyOwner returns (bool) {
         validMusicContracts[addressMusicContract] = true;
 
-        emit validatedMusicContract(addressMusicContract, true);
+        emit ValidatedMusicContract(addressMusicContract, true);
         return true;
     }
 
-    // Função de comprar 100 tokens para o contrato de musica
     function buy100OSTToMusicContract() external payable onlyValidMusicContract returns (bool) {
+        emit Buy100OSTToMusicContractCalled(msg.sender, msg.value);
+
         require(msg.value >= 5200000, "Insufficient Wei sent to buy tokens");
 
         uint256 tokensToBuy = 100;
         uint256 gweiRequired = 5000000;
         uint256 remainingWei = msg.value - gweiRequired;
 
-        require(vault.viewTokensVault() >= tokensToBuy, "Not enough tokens in OysterToken contract");
+        if (vault.viewTokensVault() < tokensToBuy) {
+          emit Buy100OSTToMusicContractFailed(msg.sender, msg.value, "Not enough tokens in OysterToken contract");
+          revert("Not enough tokens in OysterToken contract");
+        }
 
         vault.sendToken(msg.sender, tokensToBuy);
 
-        // Convertendo o remainingWei para ether antes de enviá-lo de volta ao remetente.
-        uint256 remainingEther = remainingWei / 1e18;
-        payable(msg.sender).transfer(remainingEther);
+        if(remainingWei > 0){
+          payable(msg.sender).transfer(remainingWei);
+        }
 
         emit WeiRefunded(msg.sender, remainingWei);
         return true;

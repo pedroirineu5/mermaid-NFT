@@ -1,52 +1,86 @@
-const { Web3 } = require('web3');
-const oysterTokenContract = require('../artifacts/contracts/OysterToken.sol/OysterToken.json');
-const oysterVaultContract = require('../artifacts/contracts/OysterVault.sol/OysterVault.json');
+const { ethers } = require('ethers');
+const fs = require('fs');
 
-const web3 = new Web3('http://127.0.0.1:7545');
+const provider = new ethers.JsonRpcProvider('http://127.0.0.1:7545');
 
 let oysterTokenInstance;
 let oysterVaultInstance;
-let deployerAccount;
+let musicContractInstance;
 
 async function initializeBlockchainService() {
-    const networkId = await web3.eth.net.getId();
+  const deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
+  const oysterTokenAddress = deployData.oysterToken.address;
+  const oysterTokenABI = deployData.oysterToken.abi;
+  const musicContractAddress = deployData.musicContract.address;
+  const musicContractABI = deployData.musicContract.abi;
 
-    const deployedOysterTokenAddress = oysterTokenContract.networks[networkId].address;
-    const deployedOysterVaultAddress = oysterVaultContract.networks[networkId].address;
+  // Obter a chave privada da variável de ambiente
+  const privateKey = process.env.PRIVATE_KEY;
 
-    oysterTokenInstance = new web3.eth.Contract(oysterTokenContract.abi, deployedOysterTokenAddress);
-    oysterVaultInstance = new web3.eth.Contract(oysterVaultContract.abi, deployedOysterVaultAddress);
+  // Verificar se a chave privada foi definida
+  if (!privateKey) {
+    throw new Error(
+      'PRIVATE_KEY environment variable not set. Please define it in your .env file.'
+    );
+  }
 
-    const accounts = await web3.eth.getAccounts();
-    deployerAccount = accounts[0];
+  // Criar um Wallet conectado ao provedor
+  const wallet = new ethers.Wallet(privateKey, provider);
 
-    console.log("Blockchain service initialized with deployer account:", deployerAccount);
+  oysterTokenInstance = new ethers.Contract(
+    oysterTokenAddress,
+    oysterTokenABI,
+    wallet // Usar o Wallet como signer
+  );
+
+  musicContractInstance = new ethers.Contract(
+    musicContractAddress,
+    musicContractABI,
+    wallet // Usar o Wallet como signer
+  );
+
+  console.log(
+    'Blockchain service initialized with signer:',
+    wallet.address
+  );
 }
 
 async function validateMusicContract(addressMusicContract) {
-    if (!oysterTokenInstance || !deployerAccount) {
-        throw new Error("Blockchain service not initialized.");
-    }
+  if (!oysterTokenInstance) {
+    throw new Error('Blockchain service not initialized.');
+  }
 
-    console.log("Validating music contract:", addressMusicContract);
-    const result = await oysterTokenInstance.methods.validateMusicContracts(addressMusicContract).send({ from: deployerAccount });
-    console.log("Transaction result:", result);
-    return result.transactionHash;
+  console.log('Validating music contract:', addressMusicContract);
+
+  const result = await oysterTokenInstance.validateMusicContracts(
+    addressMusicContract
+  );
+  console.log('Transaction result:', result);
+  return result.hash;
 }
 
 async function buyTokens(amount) {
-    if (!oysterTokenInstance || !deployerAccount) {
-        throw new Error("Blockchain service not initialized.");
-    }
+  if (!musicContractInstance) {
+    throw new Error('Music contract not initialized.');
+  }
 
-    console.log("Buying tokens, amount (in Wei):", amount);
-    const result = await contractInstance.methods.grantLicense(songId, licenseId).send({ from: deployerAccount });
-    console.log("Transaction result:", result);
-    return result.transactionHash;
+  console.log(
+    'Buying tokens through music contract, amount (in Wei):',
+    amount
+  );
+
+  const amountString = amount.toString();
+  const result = await musicContractInstance.buyTokens({
+    value: amountString,
+    gasLimit: 200000,
+  });
+
+  console.log('Transaction result:', result);
+  return result.hash;
 }
 
 module.exports = {
-    initializeBlockchainService,
-    validateMusicContract,
-    buyTokens,
+  initializeBlockchainService,
+  validateMusicContract,
+  buyTokens,
 };

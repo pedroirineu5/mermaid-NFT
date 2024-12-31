@@ -1,0 +1,83 @@
+{
+  "network": "localhost",
+  "oysterToken": {
+    "address": "0x4596D3d2332394E12C02b46805D8C05b34e337e2",
+    "abi": [
+      "constructor(address)",
+      "error ECDSAInvalidSignature()",
+      "error ECDSAInvalidSignatureLength(uint256)",
+      "error ECDSAInvalidSignatureS(bytes32)",
+      "error ERC20InsufficientAllowance(address,uint256,uint256)",
+      "error ERC20InsufficientBalance(address,uint256,uint256)",
+      "error ERC20InvalidApprover(address)",
+      "error ERC20InvalidReceiver(address)",
+      "error ERC20InvalidSender(address)",
+      "error ERC20InvalidSpender(address)",
+      "error ERC2612ExpiredSignature(uint256)",
+      "error ERC2612InvalidSigner(address,address)",
+      "error InvalidAccountNonce(address,uint256)",
+      "error InvalidShortString()",
+      "error OwnableInvalidOwner(address)",
+      "error OwnableUnauthorizedAccount(address)",
+      "error StringTooLong(string)",
+      "event Approval(address indexed,address indexed,uint256)",
+      "event Buy100OSTToMusicContractCalled(address,uint256)",
+      "event Buy100OSTToMusicContractFailed(address,uint256,string)",
+      "event EIP712DomainChanged()",
+      "event OwnershipTransferred(address indexed,address indexed)",
+      "event Transfer(address indexed,address indexed,uint256)",
+      "event ValidatedMusicContract(address indexed,bool)",
+      "event WeiRefunded(address indexed,uint256)",
+      "function DOMAIN_SEPARATOR() view returns (bytes32)",
+      "function allowance(address,address) view returns (uint256)",
+      "function approve(address,uint256) returns (bool)",
+      "function balanceOf(address) view returns (uint256)",
+      "function buy100OSTToMusicContract() payable returns (bool)",
+      "function decimals() view returns (uint8)",
+      "function eip712Domain() view returns (bytes1,string,string,uint256,address,bytes32,uint256[])",
+      "function mintToVault(uint256)",
+      "function name() view returns (string)",
+      "function nonces(address) view returns (uint256)",
+      "function owner() view returns (address)",
+      "function permit(address,address,uint256,uint256,uint8,bytes32,bytes32)",
+      "function renounceOwnership()",
+      "function setVault(address)",
+      "function symbol() view returns (string)",
+      "function totalSupply() view returns (uint256)",
+      "function transfer(address,uint256) returns (bool)",
+      "function transferFrom(address,address,uint256) returns (bool)",
+      "function transferOwnership(address)",
+      "function validMusicContracts(address) view returns (bool)",
+      "function validateMusicContracts(address) returns (bool)",
+      "function vault() view returns (address)"
+    ]
+  },
+  "oysterVault": {
+    "address": "0xa615467D4FF66a114f51A1c9b10C84a77eD80DC8",
+    "abi": [
+      "constructor(address,address)",
+      "error OwnableInvalidOwner(address)",
+      "error OwnableUnauthorizedAccount(address)",
+      "event OwnershipTransferred(address indexed,address indexed)",
+      "event TokensDistributed(address indexed,uint256)",
+      "function owner() view returns (address)",
+      "function oysterToken() view returns (address)",
+      "function renounceOwnership()",
+      "function sendToken(address,uint256) returns (bool)",
+      "function transferOwnership(address)",
+      "function viewTokensVault() view returns (uint256)"
+    ]
+  },
+  "musicContract": {
+    "address": "0x7F060c55880A1439a3b784c20577bf8c45842Ce6",
+    "abi": [
+      "constructor(address)",
+      "event BuyTokensCalled(address,uint256,uint256)",
+      "event BuyTokensFailed(address,uint256,string)",
+      "function buyTokens() payable",
+      "function owner() view returns (address)",
+      "function oysterToken() view returns (address)",
+      "function transferOwnership(address)"
+    ]
+  }
+}
