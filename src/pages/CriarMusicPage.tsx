@@ -20,9 +20,32 @@ import {
     DialogTrigger,
     DialogFooter,
   } from "@/components/ui/dialog";
+import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key } from "react";
+import { useState } from "react";
   
 
 function CriarMusicPage(){
+
+    const [direitos, setDireitos] = useState<{ carteira: string, porcentagem: string, atividade: string }[]>([]);
+
+    const handleAdicionarDireitos = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const carteira = formData.get('carteira') as string;
+        const porcentagem = formData.get('porcentagem') as string;
+        const atividade = formData.get('atividade') as string;
+
+        setDireitos([...direitos, { carteira, porcentagem, atividade }]);
+    };
+
+    const handleRemoverDireitos = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const carteira = formData.get('carteira') as string;
+
+        setDireitos(direitos.filter(direito => direito.carteira !== carteira));
+    };
+
     return (
         <>
         <div className="w-screen h-screen bg-[#1B2B40] flex flex-col items-center justify-between ">
@@ -38,70 +61,69 @@ function CriarMusicPage(){
             <div className="flex flex-row w-full p-8 bg-red h-full ">
                 <div className="flex flex-col space-y-4 p-8  justify-center ">  
                 <Dialog>
-                    <DialogTrigger asChild>
-                        <Button variant="outline" size='lg' className="bg-[#bf5934] text-white">Adicionar Direitos</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px] bg-[#bf5934]">
-                        <DialogHeader>
-                        <DialogTitle>Adicionar</DialogTitle>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size='lg' className="bg-[#bf5934] text-white">Adicionar Direitos</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px] bg-[#bf5934]">
+                    <DialogHeader>
+                        <DialogTitle>Adicionar Direitos</DialogTitle>
                         <DialogDescription>
                             Adicione a carteira e a porcentagem de direitos que deseja adicionar.
                         </DialogDescription>
-                        </DialogHeader>
+                    </DialogHeader>
+                    <form onSubmit={handleAdicionarDireitos}>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="carteira" className="text-right text-white">
-                                Carteira
+                                    Carteira
                                 </Label>
-                                <Input id="carteira" value="0x00000" className="col-span-3 text-white outline-stone-50" />
+                                <Input id="carteira" name="carteira" placeholder="0x00000" className="col-span-3 text-white outline-stone-50" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="porcentagem" className="text-right text-white">
-                                Porcentagem
+                                    Porcentagem
                                 </Label>
-                                <Input id="porcentagem" value="%" className="col-span-3 text-white outline-stone-50" />
+                                <Input id="porcentagem" name="porcentagem" placeholder="%" className="col-span-3 text-white outline-stone-50" />
                             </div>
                             <div className="grid grid-cols-4 items-center gap-4">
                                 <Label htmlFor="atividade" className="text-right text-white">
-                                Atividade
+                                    Atividade
                                 </Label>
-                                <Input id="atividade" value="Sua atividade" className="col-span-3 text-white outline-stone-50" />
+                                <Input id="atividade" name="atividade" placeholder="Sua Atividade" className="col-span-3 text-white outline-stone-50" />
                             </div>
                         </div>
                         <DialogFooter>
-                            <Button type="submit" className="outline-solid-white-50 text-white">Adicionar Direitos</Button>
+                            <Button type="submit" className="outline-solid-white-50 text-white">Adicionar</Button>
                         </DialogFooter>
+                    </form>
                     </DialogContent>
                 </Dialog>
+                
 
                 <Dialog>
                 <DialogTrigger asChild>
                     <Button variant="outline" size='lg' className="bg-[#bf5934] text-white">Remover Direitos</Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px]">
+                <DialogContent className="sm:max-w-[425px] bg-[#bf5934]">
                     <DialogHeader>
-                    <DialogTitle>Remover os </DialogTitle>
+                    <DialogTitle>Remover os Direitos</DialogTitle>
                     <DialogDescription>
-                        Make changes to your profile here. Click save when you're done.
+                        Remova a carteira juntamente com a porcentagem de direitos que deseja remover.
                     </DialogDescription>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="name" className="text-right">
-                        Name
-                        </Label>
-                        <Input id="name" value="Pedro Duarte" className="col-span-3" />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="username" className="text-right">
-                        Username
-                        </Label>
-                        <Input id="username"  className="col-span-3" />
-                    </div>
-                    </div>
-                    <DialogFooter>
-                    <Button type="submit">Save changes</Button>
-                    </DialogFooter>
+                    <form onSubmit={handleRemoverDireitos}>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4 text-white">
+                                <Label htmlFor="carteira" className="text-right">
+                                    Carteira
+                                </Label>
+                                <Input id="carteira" name="carteira" placeholder="0x00000" className="col-span-3 text-white outline-stone-50" />
+                            </div>
+                        </div>
+                        <DialogFooter>
+                            <Button type="submit" variant={"outline"} size='lg' className="text-white">Remover</Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
                 </Dialog>
                 
@@ -114,18 +136,22 @@ function CriarMusicPage(){
                                 Esta ação não pode ser desfeita depois de confimada.
                             </AlertDialogDescription>
                         </AlertDialogHeader>
+
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction>Continue</AlertDialogAction>
+                            <AlertDialogAction className="text-white">Continuar</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
 
                     
                 </div>
-                <div className="flex-grow ml-8">    
-                    <p className="text-white">Texto ao lado direito dos botõesTexto ao lado direito dos botõesTexto ao lado direito dos botões</p>
-                    
+                <div className="mt-4 flex-grow ml-8">
+                    {direitos.map((direito: { carteira: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; porcentagem: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; atividade: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, index: Key | null | undefined) => (
+                        <p key={index} className="text-white">
+                           {direito.carteira}, {direito.porcentagem}, {direito.atividade}
+                        </p>
+                    ))}
                 </div>
             </div>
   
