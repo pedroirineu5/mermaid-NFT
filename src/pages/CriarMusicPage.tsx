@@ -42,9 +42,19 @@ function CriarMusicPage(){
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
         const carteira = formData.get('carteira') as string;
-
-        setDireitos(direitos.filter(direito => direito.carteira !== carteira));
+        const porcentagem = formData.get('Porcentagem') as string;
+    
+        setDireitos(direitos.map(direito => {
+            if (direito.carteira === carteira) {
+                return {
+                    ...direito,
+                    porcentagem: (parseFloat(direito.porcentagem) - parseFloat(porcentagem)).toString()
+                };
+            }
+            return direito;
+        }).filter(direito => parseFloat(direito.porcentagem) > 0));
     };
+    
 
     return (
         <>
@@ -71,6 +81,7 @@ function CriarMusicPage(){
                             Adicione a carteira e a porcentagem de direitos que deseja adicionar.
                         </DialogDescription>
                     </DialogHeader>
+
                     <form onSubmit={handleAdicionarDireitos}>
                         <div className="grid gap-4 py-4">
                             <div className="grid grid-cols-4 items-center gap-4">
@@ -119,6 +130,12 @@ function CriarMusicPage(){
                                 </Label>
                                 <Input id="carteira" name="carteira" placeholder="0x00000" className="col-span-3 text-white outline-stone-50" />
                             </div>
+                            <div className="grid grid-cols-4 items-center gap-4 text-white">
+                                <Label htmlFor="Porcentagem" className="text-right">
+                                    Carteira
+                                </Label>
+                                <Input id="carteira" name="Porcentagem" placeholder="%" className="col-span-3 text-white outline-stone-50" />
+                            </div>
                         </div>
                         <DialogFooter>
                             <Button type="submit" variant={"outline"} size='lg' className="text-white">Remover</Button>
@@ -156,7 +173,6 @@ function CriarMusicPage(){
             </div>
   
         </div>
-  
       
       <footer className="bg-[#00060D] font-light w-screen text-[9px] text-white"> made by Team Leviatã</footer>
     </div>
