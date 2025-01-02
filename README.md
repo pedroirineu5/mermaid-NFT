@@ -1,50 +1,55 @@
-# React + TypeScript + Vite
+# Iniciando o Projeto Mermaid-NFT
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Projeto Final em Equipe proposto pela CompassUOL, com o intuito de aplicar todos os conhecimentos obtidos durante a trilha, Crypto Submersion.
 
-Currently, two official plugins are available:
+## Passo a Passo para Clonar e Iniciar o Projeto
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+1. **Clone o Repositório**
+   
+   Abra o terminal e execute o comando abaixo para clonar o repositório:
+   ```sh
+   git clone <URL_DO_REPOSITORIO>
+   ```
 
-## Expanding the ESLint configuration
+2. **Navegue até o Diretório do Projeto**
+   
+   Após clonar o repositório, navegue até o diretório do projeto:
+   ```sh
+   cd mermaid-NFT
+   ```
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+3. **Instale as Dependências**
+   
+   Certifique-se de ter o Node.js e npm instalados. Em seguida, instale as dependências do projeto:
+   ```sh
+   npm install
+   ```
 
-- Configure the top-level `parserOptions` property like this:
+4. **Inicie o Projeto**
+   
+   Para iniciar o projeto, execute o comando:
+   ```sh
+   npm start
+   ```
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+5. **Acesse o Projeto no Navegador**
+   
+   Abra o navegador e acesse `http://localhost:3000` para ver o projeto em execução.
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Estrutura do Projeto
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+- `src/`: Contém o código-fonte do projeto.
+- `public/`: Contém arquivos públicos, como o `index.html`.
+- `package.json`: Contém as dependências e scripts do projeto.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## Contribuindo
+
+1. Faça um fork do projeto.
+2. Crie uma nova branch (`git checkout -b feature/nova-feature`).
+3. Commit suas mudanças (`git commit -m 'Adiciona nova feature'`).
+4. Faça push para a branch (`git push origin feature/nova-feature`).
+5. Abra um Pull Request.
+
+## Licença
+
+Este projeto está licenciado sob a [MIT License](LICENSE).
