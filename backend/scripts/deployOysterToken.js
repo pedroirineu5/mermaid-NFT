@@ -31,11 +31,20 @@ async function main() {
   const vaultBalance = await oysterToken.balanceOf(
     await oysterVault.getAddress()
   );
-  console.log(`OysterVault balance after minting: ${vaultBalance.toString()}`);
+  console.log(
+    `OysterVault balance after minting: ${vaultBalance.toString()}`
+  );
+
+  // Valores para os parâmetros do MusicContract (em Gwei)
+  const rightPurchaseValue = hre.ethers.parseUnits("5000000", "gwei"); 
+  const valueForListening = hre.ethers.parseUnits("1000", "gwei");
 
   const MusicContract = await hre.ethers.getContractFactory("MusicContract");
   const musicContract = await MusicContract.deploy(
-    await oysterToken.getAddress()
+    await oysterToken.getAddress(),
+    deployer.address, // _owner
+    rightPurchaseValue, // _rightPurchaseValue
+    valueForListening  // _valueForListening
   );
   await musicContract.waitForDeployment();
   console.log("MusicContract deployed to:", await musicContract.getAddress());
@@ -44,18 +53,7 @@ async function main() {
     await musicContract.getAddress()
   );
   await validateTx.wait();
-  console.log(
-    "MusicContract address validated in OysterToken contract"
-  );
-
-  const buyTokensAmount = hre.ethers.parseUnits("5200000", "wei");
-  const buyTokensTx = await musicContract.buyTokens({
-    value: buyTokensAmount,
-  });
-  await buyTokensTx.wait();
-  console.log(
-    `Tokens purchased through MusicContract. Transaction hash: ${buyTokensTx.hash}`
-  );
+  console.log("MusicContract address validated in OysterToken contract");
 
   const deployData = {
     network: hre.network.name,

@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0x4596D3d2332394E12C02b46805D8C05b34e337e2",
+    "address": "0xCC4513291815fb7e8ef563c0bB99F2D01715F684",
     "abi": [
       "constructor(address)",
       "error ECDSAInvalidSignature()",
@@ -53,7 +53,7 @@
     ]
   },
   "oysterVault": {
-    "address": "0xa615467D4FF66a114f51A1c9b10C84a77eD80DC8",
+    "address": "0xaDbB6660BadAa006B87c1379D9C3742f7ea95735",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
@@ -69,15 +69,21 @@
     ]
   },
   "musicContract": {
-    "address": "0x7F060c55880A1439a3b784c20577bf8c45842Ce6",
+    "address": "0xdb556c910f7dAD5938eEcb29FCb5ee081fF8c5Ab",
     "abi": [
       "constructor(address)",
-      "event BuyTokensCalled(address,uint256,uint256)",
-      "event BuyTokensFailed(address,uint256,string)",
-      "function buyTokens() payable",
+      "event assignedRight(address indexed,address indexed,uint8)",
+      "event musicWithSealedRights(address indexed,bool)",
+      "event withdrawalRight(address indexed,address indexed,uint8)",
+      "function assignRights(address,uint8) returns (bool)",
+      "function divisionOfRights(address) view returns (uint8)",
+      "function musicContactIsSealed() view returns (bool)",
       "function owner() view returns (address)",
       "function oysterToken() view returns (address)",
-      "function transferOwnership(address)"
+      "function remainingRightsDivision() view returns (uint8)",
+      "function rightHolders(uint256) view returns (address)",
+      "function sealRights() returns (bool)",
+      "function withdrawRights(address,uint8) returns (bool)"
     ]
   }
 }
