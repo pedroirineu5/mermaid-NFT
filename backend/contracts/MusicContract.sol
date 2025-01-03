@@ -211,7 +211,7 @@ contract MusicContract {
         return true;
    }
 
-    function buyRightsMusic() external payable isSealed returns (bool) {
+ function buyRightsMusic() external payable isSealed returns (bool) {
         uint256 valueBuyRight = rightPurchaseValueInGwei * 1e9;
         require(
             msg.value >= valueBuyRight,

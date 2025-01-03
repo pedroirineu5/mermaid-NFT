@@ -45,11 +45,12 @@ describe('OysterToken', function () {
   
     it('Should mint tokens to the vault', async function () {
         const mintAmount = hre.ethers.parseUnits("100000", 18);
+         const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
         const mintTx = await oysterToken.mintToVault(mintAmount);
         await mintTx.wait();
-  
+      
         const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
-        expect(vaultBalance).to.equal(hre.ethers.parseUnits('100000', 18));
+        expect(vaultBalance).to.equal(initialVaultBalance + mintAmount);
     });
   
     it('Should validate a music contract address', async function () {
@@ -58,14 +59,15 @@ describe('OysterToken', function () {
         expect(await oysterToken.validMusicContracts(musicContractAddress)).to.equal(true);
     });
   
-    it('Should buy 100 OST for a music contract', async function () {
+     it('Should buy 100 OST for a music contract', async function () {
         const businessRateWei = await oysterToken.getBusinessRateWei();
         const gweiPerToken = await oysterToken.getGweiPerToken();
+        const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
       await oysterToken.buy100OSTToMusicContract(await musicContract.getAddress(), {
         value: (businessRateWei) + (gweiPerToken * BigInt(100) * (10n ** 9n)),
       });
-      const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
-       expect(vaultBalance).to.equal(hre.ethers.parseUnits("99900", 18));
+       const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
+       expect(vaultBalance).to.equal(initialVaultBalance - hre.ethers.parseUnits("100", 18));
     });
   
     it('Should sell Oyster tokens', async function () {

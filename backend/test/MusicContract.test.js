@@ -23,7 +23,7 @@ describe('MusicContract', function () {
         const setVaultTx = await oysterToken.setVault(await oysterVault.getAddress());
         await setVaultTx.wait();
 
-        const mintAmount = hre.ethers.parseUnits("10000", 18);
+        const mintAmount = hre.ethers.parseUnits("100000", 18);
         const mintTx = await oysterToken.mintToVault(mintAmount);
         await mintTx.wait();
 
@@ -81,16 +81,21 @@ describe('MusicContract', function () {
     });
 
     it('Should buy rights', async function () {
-        await musicContract.assignRights(user1.address, 100);
-        await musicContract.sealRights();
-        const rightPurchaseValue = await musicContract.rightPurchaseValueInGwei();
-        // Transferir Ether para user1 para a compra dos direitos
-       await deployer.sendTransaction({
-            to: user1.address,
-            value: rightPurchaseValue * (10n ** 9n)
-        })
-       await musicContract.connect(user1).buyRightsMusic({ value: rightPurchaseValue * (10n ** 9n)});
+      await musicContract.assignRights(user1.address, 100);
+      await musicContract.sealRights();
+      const rightPurchaseValue = await musicContract.rightPurchaseValueInGwei();
+      const balanceBefore = await hre.ethers.provider.getBalance(deployer.address);
+      console.log("Balance before:", balanceBefore.toString());
+
+      await musicContract.connect(deployer).buyRightsMusic({
+         value: rightPurchaseValue * (10n ** 9n)
+      });
+
+    const balanceAfter = await hre.ethers.provider.getBalance(deployer.address);
+      console.log("Balance after:", balanceAfter.toString());
     });
+
+
 
     it('Should listen to music', async function () {
        await musicContract.assignRights(user1.address, 100);
