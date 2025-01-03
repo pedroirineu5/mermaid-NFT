@@ -31,8 +31,8 @@ describe('OysterToken', function () {
          musicContract = await MusicContract.deploy(
             await oysterToken.getAddress(),
             deployer.address,
-             hre.ethers.parseUnits('5000000', 'gwei'),
-             hre.ethers.parseUnits('1000', 'gwei')
+             hre.ethers.parseUnits('1', 'ether'),
+             hre.ethers.parseUnits('0.0001', 'ether')
           );
           await musicContract.waitForDeployment();
   
@@ -43,12 +43,11 @@ describe('OysterToken', function () {
       expect(await oysterToken.owner()).to.equal(deployer.address);
     });
   
-    it('Should mint tokens to the vault', async function () {
+     it('Should mint tokens to the vault', async function () {
         const mintAmount = hre.ethers.parseUnits("100000", 18);
-         const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
+        const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
         const mintTx = await oysterToken.mintToVault(mintAmount);
         await mintTx.wait();
-      
         const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
         expect(vaultBalance).to.equal(initialVaultBalance + mintAmount);
     });
@@ -59,34 +58,34 @@ describe('OysterToken', function () {
         expect(await oysterToken.validMusicContracts(musicContractAddress)).to.equal(true);
     });
   
-     it('Should buy 100 OST for a music contract', async function () {
+    it('Should buy 100 OST for a music contract', async function () {
         const businessRateWei = await oysterToken.getBusinessRateWei();
         const gweiPerToken = await oysterToken.getGweiPerToken();
         const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
-      await oysterToken.buy100OSTToMusicContract(await musicContract.getAddress(), {
-        value: (businessRateWei) + (gweiPerToken * BigInt(100) * (10n ** 9n)),
-      });
-       const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
-       expect(vaultBalance).to.equal(initialVaultBalance - hre.ethers.parseUnits("100", 18));
-    });
+        const buy100OSTTx = await oysterToken.buy100OSTToMusicContract(await musicContract.getAddress(), {
+            value: businessRateWei + (gweiPerToken * 100n * 10n**9n),
+        });
+        await buy100OSTTx.wait()
+        const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
+       expect(vaultBalance).to.equal(initialVaultBalance - hre.ethers.parseUnits("100", 18n));
+   });
   
     it('Should sell Oyster tokens', async function () {
         const businessRateWei = await oysterToken.getBusinessRateWei();
         const gweiPerToken = await oysterToken.getGweiPerToken();
-        await oysterToken.buy100OSTToMusicContract(await musicContract.getAddress(), {
-            value: (businessRateWei) + (gweiPerToken * BigInt(100) * (10n ** 9n)),
-          });
-      
-       const MusicContractUser1 = musicContract.connect(user1);
-
-       await musicContract.assignRights(user1.address, 100);
+         const initialVaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
+        const buy100OSTTx = await oysterToken.buy100OSTToMusicContract(await musicContract.getAddress(), {
+          value: businessRateWei + (gweiPerToken * 100n * 10n**9n),
+        });
+        await buy100OSTTx.wait()
+        await musicContract.assignRights(user1.address, 100);
         await musicContract.sealRights();
-       await musicContract.buy100OysterToken({value: 5300000 * 1e9})
-
-       await MusicContractUser1.approveOysterVault(50);
-      await oysterToken.sellOysterToken(await musicContract.getAddress(), 50);
-  
-      const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
-      expect(vaultBalance).to.equal(hre.ethers.parseUnits("99950", 18));
+        await musicContract.connect(user1).buy100OysterToken();
+        const balanceBeforeSell = await oysterToken.balanceOf(await oysterVault.getAddress());
+        await musicContract.connect(user1).approveOysterVault(50);
+        const sellTx =  await musicContract.connect(user1).sellOysterToken(50);
+        await sellTx.wait()
+       const vaultBalance = await oysterToken.balanceOf(await oysterVault.getAddress());
+        expect(vaultBalance).to.equal(balanceBeforeSell + hre.ethers.parseUnits("50", 18n));
     });
   });

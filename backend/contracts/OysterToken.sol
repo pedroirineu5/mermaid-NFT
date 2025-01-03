@@ -44,7 +44,7 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         return true;
     }
 
-    function buy100OSTToMusicContract(address _musicContractAddress) external payable returns (bool) {
+     function buy100OSTToMusicContract(address _musicContractAddress) external payable returns (bool) {
         require(validMusicContracts[_musicContractAddress], "Invalid MusicContract address");
 
         uint256 weiRequired = 100 * gweiPerToken * 1e9 + businessRateWei;
@@ -60,28 +60,29 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
             require(success, "Failed to send remaining Ether");
         }
 
-        vault.sendToken(msg.sender, 100);
-
+        vault.sendToken(_musicContractAddress, 100);
+        
         emit WeiRefunded(msg.sender, remainingWei);
         return true;
     }
 
+
     function sellOysterToken(address holder, uint256 amount) external payable returns (bool) {
         require(amount > 0, "Amount must be greater than zero");
-
         console.log(string(abi.encodePacked("sellOysterToken called by:", Strings.toHexString(msg.sender), "holder:", Strings.toHexString(holder), "amount:", Strings.toString(amount))));
-
-        vault.receiveTokens(msg.sender, amount);
+        
+        vault.receiveTokens(holder, amount);
+        
         uint256 tokenValueInWei = 50000 * 1e9;
         uint256 amountTransfer = tokenValueInWei * amount;
 
-        console.log(string(abi.encodePacked("Transferring:", Strings.toString(amountTransfer), "wei to holder")));
-
+         console.log(string(abi.encodePacked("Transferring:", Strings.toString(amountTransfer), "wei to holder")));
+        
         payable(holder).transfer(amountTransfer);
-
         emit transferViaTokenSale(holder, amountTransfer);
         return true;
     }
+
 
     function getBusinessRateWei() public view returns (uint256) {
         return businessRateWei;
@@ -114,25 +115,23 @@ contract OysterVault is Ownable {
             oysterToken.balanceOf(address(this)) >= amount,
             "Vault does not have enough tokens"
         );
-        require(
-            oysterToken.transfer(musicContract, amount),
+         require(
+           oysterToken.transfer(musicContract, amount),
             "Token transfer failed"
         );
-
+       
         emit TokensDistributed(musicContract, amount);
         return true;
     }
 
-    function receiveTokens(address musicContract, uint256 amount) external onlyOysterToken returns (bool) {
-        console.log(string(abi.encodePacked("receiveTokens called - musicContract:", Strings.toHexString(musicContract), "amount:", Strings.toString(amount))));
-        bool success = IERC20(oysterToken).transferFrom(musicContract, address(this), amount);
+   function receiveTokens(address holder, uint256 amount) external onlyOysterToken returns (bool) {
+        console.log(string(abi.encodePacked("receiveTokens called - holder:", Strings.toHexString(holder), "amount:", Strings.toString(amount))));
+        require(oysterToken.transfer(address(this), amount), "Token transfer failed");
 
-        console.log("transferFrom success:", success);
-        require(success, "Token transfer failed");
-
-        emit TokensRecieved(musicContract, amount);
-        return true;
+         emit TokensRecieved(holder, amount);
+         return true;
     }
+
 
     function viewTokensVault() external view returns (uint256) {
         return oysterToken.balanceOf(address(this));

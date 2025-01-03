@@ -156,33 +156,31 @@ contract MusicContract {
         return true;
     }
 
-    function buy100OysterToken() external payable isSealed returns (bool) {
+    function buy100OysterToken() external isSealed returns (bool) {
         require(
             divisionOfRights[msg.sender] != 0,
             "This function cannot be called by anyone who does not have rights to the song"
         );
-        require(
-            address(this).balance >= 5300000 * 1e9,
-            "Insufficient Ether sent to buy tokens. Must have at least 0.0053 Ether"
-        );
-
+         
+        tokensPerAddress[msg.sender] += 100;
         balanceTokens += 100;
-        tokenSplit();
-
+        emit tokenAssigned(msg.sender, 100);
         return true;
     }
-    
+
     function tokenSplit() internal returns (bool) {
         for (uint256 i = 0; i < rightHolders.length; i++) {
-            tokensPerAddress[rightHolders[i]] += (balanceTokens * divisionOfRights[rightHolders[i]]) / 100;
-            emit tokenAssigned(rightHolders[i], (balanceTokens * divisionOfRights[rightHolders[i]]) / 100);
-            oysterToken.approve(address(oysterToken.vault()), (balanceTokens * divisionOfRights[rightHolders[i]]) / 100);
+            uint256 amount = (balanceTokens * divisionOfRights[rightHolders[i]]) / 100;
+           
+            IERC20(oysterToken).transfer(rightHolders[i], amount);
+            emit tokenAssigned(rightHolders[i], amount);
+            
         }
-        balanceTokens = 0;
+         balanceTokens = 0;
         return true;
     }
 
-    function sellOysterToken(uint256 amount) external isSealed returns (bool) {
+   function sellOysterToken(uint256 amount) external isSealed returns (bool) {
         require(
             divisionOfRights[msg.sender] != 0,
             "This function cannot be called by anyone who does not have rights to the song"
@@ -195,33 +193,31 @@ contract MusicContract {
             tokensPerAddress[msg.sender] >= amount,
             "Number of tokens unavailable"
         );
-
-        tokensPerAddress[msg.sender] -= amount;
+         tokensPerAddress[msg.sender] -= amount;
         balanceTokens -= amount;
-
+        oysterToken.sellOysterToken(msg.sender, amount);
         return true;
     }
-
     function approveOysterVault(uint256 amount) external isSealed returns (bool) {
-        require(
-              divisionOfRights[msg.sender] != 0,
-              "This function cannot be called by anyone who does not have rights to the song"
-          );
-        oysterToken.approve(address(oysterToken.vault()), amount);
-        return true;
-   }
+         require(
+             divisionOfRights[msg.sender] != 0,
+             "This function cannot be called by anyone who does not have rights to the song"
+         );
+         oysterToken.approve(address(oysterToken.vault()), amount);
+         return true;
+     }
 
- function buyRightsMusic() external payable isSealed returns (bool) {
+
+    function buyRightsMusic() external payable isSealed returns (bool) {
         uint256 valueBuyRight = rightPurchaseValueInGwei * 1e9;
         require(
             msg.value >= valueBuyRight,
             "insufficient value to purchase the music rights"
         );
-
         uint256 remainingValue = msg.value - valueBuyRight;
         emit purchaseMade(msg.sender, true);
+        payable(owner).transfer(valueBuyRight);
         payable(msg.sender).transfer(remainingValue);
-
         return true;
     }
 
@@ -231,11 +227,9 @@ contract MusicContract {
             msg.value >= valueListen,
             "insufficient value to listen the music rights"
         );
-
         uint256 remainingValue = msg.value - valueListen;
         emit musicHeard(msg.sender, true);
         payable(msg.sender).transfer(remainingValue);
-
         return true;
     }
 

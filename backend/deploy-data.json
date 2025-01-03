@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0xFcc0c84351Cf678d526BeDAa43b9CfA6dA816Db3",
+    "address": "0xB611e727C7026cC7257cD9f2998814345e009068",
     "abi": [
       "constructor(address)",
       "error ECDSAInvalidSignature()",
@@ -58,7 +58,7 @@
     ]
   },
   "oysterVault": {
-    "address": "0xAd9f7f425e23267Ba80621e19dd03A42F7B64A05",
+    "address": "0x3C351A5aAF63750587cd5841D8097E693D3E77b7",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
@@ -78,7 +78,7 @@
     ]
   },
   "musicContract": {
-    "address": "0xE0CA6Bc9BEE5a738cBE963Ad346e49c0FfA5Ba8e",
+    "address": "0xe8CF199B28f2Dc54041f59D6F8C84341D066214C",
     "abi": [
       "constructor(address,address,uint256,uint256)",
       "event assignedRight(address indexed,address indexed,uint8)",
