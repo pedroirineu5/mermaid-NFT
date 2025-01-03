@@ -4,23 +4,21 @@ pragma solidity 0.8.28;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 
 contract OysterToken is ERC20, Ownable, ERC20Permit {
+    using Strings for uint256;
+    
     OysterVault public vault;
     mapping(address => bool) public validMusicContracts;
 
-    uint256 public businessRateWei = 200_000 * 1e9; // Variável pública para businessRateWei
-    uint256 public gweiPerToken = 50_000; // Variável pública para gweiPerToken
+    uint256 public businessRateWei = 200_000 * 1e9;
+    uint256 public gweiPerToken = 50_000;
 
     event validatedMusicContract(address indexed _address, bool valid);
     event WeiRefunded(address indexed to, uint256 weiAmount);
     event transferViaTokenSale(address indexed to, uint256 weiAmount);
-
-    // Removendo o modifier onlyValidMusicContract
-    // modifier onlyValidMusicContract() {
-    //     require(validMusicContracts[msg.sender], "This function can only be called by the valid MusicContract address");
-    //     _;
-    // }
 
     constructor(address initialOwner)
         ERC20("OysterToken", "OST")
@@ -28,20 +26,17 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         ERC20Permit("OysterToken")
     {}
 
-    // Função para configurar o endereço do Vault após a implantação
     function setVault(OysterVault _vault) external onlyOwner {
-        require(address(_vault) != address(0), "Invalid vault address");  // Verificar se o novo endereço do vault é válido
-        require(address(vault) == address(0), "Vault already set");        // Verificar se o vault já foi configurado
+        require(address(_vault) != address(0), "Invalid vault address");
+        require(address(vault) == address(0), "Vault already set");
         vault = _vault;
     }
 
-    // Mint para o Vault
     function mintToVault(uint256 amount) external onlyOwner {
         require(address(vault) != address(0), "Vault address not set");
         _mint(address(vault), amount);
     }
 
-    // Adicionar o endereço e validar de um contract de música
     function validateMusicContracts(address addressMusicContract) external onlyOwner returns (bool) {
         validMusicContracts[addressMusicContract] = true;
 
@@ -49,9 +44,7 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         return true;
     }
 
-    // Função de comprar 100 tokens para o contrato de música (modificada)
     function buy100OSTToMusicContract(address _musicContractAddress) external payable returns (bool) {
-        //Verifica se o contrato de música é válido
         require(validMusicContracts[_musicContractAddress], "Invalid MusicContract address");
 
         uint256 weiRequired = 100 * gweiPerToken * 1e9 + businessRateWei;
@@ -60,40 +53,40 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
 
         uint256 remainingWei = msg.value - weiRequired;
 
-        // Garante que há tokens suficientes no vault antes de continuar
         require(vault.viewTokensVault() >= 100, "Not enough tokens in OysterToken contract");
 
-        // Transfere o troco antes de realizar outras operações externas
         if (remainingWei > 0) {
             (bool success, ) = payable(msg.sender).call{value: remainingWei}("");
             require(success, "Failed to send remaining Ether");
         }
 
-        // Garante a transferência de tokens
         vault.sendToken(msg.sender, 100);
 
         emit WeiRefunded(msg.sender, remainingWei);
         return true;
     }
 
-    // Função para vender tokens
     function sellOysterToken(address holder, uint256 amount) external payable returns (bool) {
         require(amount > 0, "Amount must be greater than zero");
+
+        console.log(string(abi.encodePacked("sellOysterToken called by:", Strings.toHexString(msg.sender), "holder:", Strings.toHexString(holder), "amount:", Strings.toString(amount))));
 
         vault.receiveTokens(msg.sender, amount);
         uint256 tokenValueInWei = 50000 * 1e9;
         uint256 amountTransfer = tokenValueInWei * amount;
+
+        console.log(string(abi.encodePacked("Transferring:", Strings.toString(amountTransfer), "wei to holder")));
+
         payable(holder).transfer(amountTransfer);
 
         emit transferViaTokenSale(holder, amountTransfer);
+        return true;
     }
 
-    // Getter para businessRateWei
     function getBusinessRateWei() public view returns (uint256) {
         return businessRateWei;
     }
 
-    // Getter para gweiPerToken
     function getGweiPerToken() public view returns (uint256) {
         return gweiPerToken;
     }
@@ -131,8 +124,10 @@ contract OysterVault is Ownable {
     }
 
     function receiveTokens(address musicContract, uint256 amount) external onlyOysterToken returns (bool) {
+        console.log(string(abi.encodePacked("receiveTokens called - musicContract:", Strings.toHexString(musicContract), "amount:", Strings.toString(amount))));
         bool success = IERC20(oysterToken).transferFrom(musicContract, address(this), amount);
 
+        console.log("transferFrom success:", success);
         require(success, "Token transfer failed");
 
         emit TokensRecieved(musicContract, amount);

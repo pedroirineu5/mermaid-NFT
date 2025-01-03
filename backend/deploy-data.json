@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0x0F330570C9a014E70C751318A01fd539cA868AbB",
+    "address": "0xDe9293FB8215c4369840E75C34EAfa7b8D8c4adA",
     "abi": [
       "constructor(address)",
       "error ECDSAInvalidSignature()",
@@ -20,6 +20,7 @@
       "error OwnableInvalidOwner(address)",
       "error OwnableUnauthorizedAccount(address)",
       "error StringTooLong(string)",
+      "error StringsInsufficientHexLength(uint256,uint256)",
       "event Approval(address indexed,address indexed,uint256)",
       "event EIP712DomainChanged()",
       "event OwnershipTransferred(address indexed,address indexed)",
@@ -57,11 +58,12 @@
     ]
   },
   "oysterVault": {
-    "address": "0xE3480462D658B4F3764A7F875f15A45fbD522F17",
+    "address": "0x06FB104B042020738358c47e13402467a66E9075",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
       "error OwnableUnauthorizedAccount(address)",
+      "error StringsInsufficientHexLength(uint256,uint256)",
       "event OwnershipTransferred(address indexed,address indexed)",
       "event TokensDistributed(address indexed,uint256)",
       "event TokensRecieved(address indexed,uint256)",
@@ -76,7 +78,7 @@
     ]
   },
   "musicContract": {
-    "address": "0xe9d671C6183FE2e9b5C8000F94FC6E1472B9857a",
+    "address": "0x703aFafC9e8b28CEEEa4F6506C029D0d5e82888c",
     "abi": [
       "constructor(address,address,uint256,uint256)",
       "event assignedRight(address indexed,address indexed,uint8)",
@@ -85,8 +87,10 @@
       "event purchaseMade(address indexed,bool)",
       "event tokenAssigned(address indexed,uint256)",
       "event withdrawalRight(address indexed,address indexed,uint8)",
+      "function approveOysterVault(uint256) returns (bool)",
       "function assignRights(address,uint8) returns (bool)",
       "function balanceTokens() view returns (uint256)",
+      "function buy100OysterToken() payable returns (bool)",
       "function buyRightsMusic() payable returns (bool)",
       "function divisionOfRights(address) view returns (uint8)",
       "function getRightHolders() view returns (address[])",

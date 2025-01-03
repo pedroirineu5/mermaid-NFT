@@ -141,13 +141,36 @@ async function buy100OysterTokens(address) {
     }
 }
 
+async function approveOysterVault(amount) {
+    if (!musicContractInstance) {
+      throw new Error('Music contract not initialized.');
+    }
+  
+    console.log(`Approve OysterVault to spend ${amount} tokens...`);
+    try {
+        const result = await musicContractInstance.approveOysterVault(BigInt(amount));
+        await result.wait();
+        console.log('Transaction result:', result);
+        return result.hash;
+    } catch (error) {
+        console.error('Error approving OysterVault:', error);
+        throw new Error(`Failed to approve OysterVault: ${error.message}`);
+    }
+}
+
 async function sellOysterTokens(amount) {
     if (!oysterTokenInstance) {
       throw new Error('OysterToken contract not initialized.');
     }
+    if (!musicContractInstance) {
+      throw new Error('Music contract not initialized.');
+    }
   
     console.log(`Selling ${amount} Oyster tokens...`);
     try {
+        // Aprova o vault para gastar os tokens
+        await approveOysterVault(amount)
+        // Vende os tokens
         const result = await oysterTokenInstance.sellOysterToken(musicContractInstance.target, BigInt(amount));
         await result.wait();
         console.log('Transaction result:', result);
@@ -292,6 +315,7 @@ module.exports = {
   withdrawMusicRights,
   buy100OysterTokens,
   sellOysterTokens,
+    approveOysterVault,
   buyMusicRights,
   listenToMusic,
   getRightHolders,

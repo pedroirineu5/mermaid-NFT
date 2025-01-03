@@ -74,10 +74,6 @@ contract MusicContract {
         address addressRight,
         uint8 percentageOfRights
     ) external onlyOwner returns (bool) {
-        console.log("assignRights called by:", msg.sender);
-        console.log("Assigning to:", addressRight);
-        console.log("Percentage:", percentageOfRights);
-        emit assignedRight(addressRight, address(this), percentageOfRights);
         require(
             !musicContactIsSealed,
             "The contract is already sealed, no modification of rights can be made"
@@ -160,28 +156,29 @@ contract MusicContract {
         return true;
     }
 
-    // function buy100OysterToken() external payable isSealed returns (bool) {
-    //     require(
-    //         divisionOfRights[msg.sender] != 0,
-    //         "This function cannot be called by anyone who does not have rights to the song"
-    //     );
-    //     require(
-    //         address(this).balance >= 5300000 * 1e9,
-    //         "Insufficient Ether sent to buy tokens. Must have at least 0.0053 Ether"
-    //     );
+    function buy100OysterToken() external payable isSealed returns (bool) {
+        require(
+            divisionOfRights[msg.sender] != 0,
+            "This function cannot be called by anyone who does not have rights to the song"
+        );
+        require(
+            address(this).balance >= 5300000 * 1e9,
+            "Insufficient Ether sent to buy tokens. Must have at least 0.0053 Ether"
+        );
 
-    //     balanceTokens += 100;
-    //     tokenSplit();
+        balanceTokens += 100;
+        tokenSplit();
 
-    //     return true;
-    // }
-
+        return true;
+    }
+    
     function tokenSplit() internal returns (bool) {
         for (uint256 i = 0; i < rightHolders.length; i++) {
-            tokensPerAddress[rightHolders[i]] += divisionOfRights[rightHolders[i]];
-            emit tokenAssigned(rightHolders[i], divisionOfRights[rightHolders[i]]);
+            tokensPerAddress[rightHolders[i]] += (balanceTokens * divisionOfRights[rightHolders[i]]) / 100;
+            emit tokenAssigned(rightHolders[i], (balanceTokens * divisionOfRights[rightHolders[i]]) / 100);
+            oysterToken.approve(address(oysterToken.vault()), (balanceTokens * divisionOfRights[rightHolders[i]]) / 100);
         }
-
+        balanceTokens = 0;
         return true;
     }
 
@@ -204,6 +201,15 @@ contract MusicContract {
 
         return true;
     }
+
+    function approveOysterVault(uint256 amount) external isSealed returns (bool) {
+        require(
+              divisionOfRights[msg.sender] != 0,
+              "This function cannot be called by anyone who does not have rights to the song"
+          );
+        oysterToken.approve(address(oysterToken.vault()), amount);
+        return true;
+   }
 
     function buyRightsMusic() external payable isSealed returns (bool) {
         uint256 valueBuyRight = rightPurchaseValueInGwei * 1e9;
