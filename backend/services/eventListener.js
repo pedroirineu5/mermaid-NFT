@@ -33,39 +33,39 @@ async function listenToEvents() {
     const connection = await connectToDatabase();
     console.log('Database connection established successfully!');
 
-    // Listener para ValidatedMusicContract (OysterToken)
+    // Listener para validatedMusicContract (OysterToken)
     oysterTokenInstance.on(
-      'ValidatedMusicContract',
+      'validatedMusicContract',
       async (address, valid, event) => {
         console.log(
-          `Event: ValidatedMusicContract - Address: ${address}, Valid: ${valid}`
+          `Event: validatedMusicContract - Address: ${address}, Valid: ${valid}`
         );
         const transactionHash = event.log.transactionHash;
 
         try {
-          console.log('Executing SQL query for ValidatedMusicContract...');
+          console.log('Executing SQL query for validatedMusicContract...');
           const [results] = await connection.execute(
-            'INSERT INTO valid_music_contracts (contractAddress, valid, transactionHash) VALUES (?, ?, ?)',
+            'INSERT INTO validated_music_contracts (contractAddress, valid, transactionHash) VALUES (?, ?, ?)',
             [address, valid, transactionHash]
           );
           console.log(
-            'ValidatedMusicContract event data inserted into database!',
+            'validatedMusicContract event data inserted into database!',
             results
           );
         } catch (dbError) {
           console.error(
-            'Error inserting ValidatedMusicContract event data:',
+            'Error inserting validatedMusicContract event data:',
             dbError
           );
         }
       }
     );
 
-    // Listener para WeiRefunded (OysterVault)
-    oysterVaultInstance.on('WeiRefunded', async (to, weiAmount, event) => {
+    // Listener para WeiRefunded (OysterToken) - Movido para cá!
+    oysterTokenInstance.on('WeiRefunded', async (to, weiAmount, event) => {
       console.log(`Event: WeiRefunded - To: ${to}, Amount: ${weiAmount}`);
       const transactionHash = event.log.transactionHash;
-  
+
       try {
         const [results] = await connection.execute(
           'INSERT INTO refunds (to_address, gweiAmount, transactionHash) VALUES (?, ?, ?)',
@@ -185,7 +185,7 @@ async function listenToEvents() {
     oysterTokenInstance.on('transferViaTokenSale', async (to, weiAmount, event) => {
       console.log(`Event: transferViaTokenSale - To: ${to}, Amount: ${weiAmount}`);
       const transactionHash = event.log.transactionHash;
-  
+
       try {
         const [results] = await connection.execute(
           'INSERT INTO token_sales (to_address, weiAmount, transactionHash) VALUES (?, ?, ?)',

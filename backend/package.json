@@ -1,14 +1,15 @@
 {
-  "name": "mermaid-backend",
+  "name": "mermaid-nft",
   "version": "1.0.0",
   "description": "Backend para o DApp Mermaid, uma plataforma para gestão de direitos autorais na indústria musical.",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "compile": "npx hardhat compile",
-    "deploy": "npx hardhat run scripts/deploySimpleEvent.js --network localhost",
+    "deploy": "npx hardhat run scripts/deployOysterToken.js --network localhost",
     "test": "npx hardhat test",
-    "console": "npx hardhat console --network localhost"
+    "console": "npx hardhat console --network localhost",
+    "redeploy": "npx hardhat clean && npx hardhat compile && npx hardhat run scripts/deployOysterToken.js --network localhost"
   },
   "keywords": [
     "blockchain",

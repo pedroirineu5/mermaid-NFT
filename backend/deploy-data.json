@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0xCC4513291815fb7e8ef563c0bB99F2D01715F684",
+    "address": "0x22B272a1Bb83D4b4C4F945b31aD2EdEda53bf2D0",
     "abi": [
       "constructor(address)",
       "error ECDSAInvalidSignature()",
@@ -21,13 +21,12 @@
       "error OwnableUnauthorizedAccount(address)",
       "error StringTooLong(string)",
       "event Approval(address indexed,address indexed,uint256)",
-      "event Buy100OSTToMusicContractCalled(address,uint256)",
-      "event Buy100OSTToMusicContractFailed(address,uint256,string)",
       "event EIP712DomainChanged()",
       "event OwnershipTransferred(address indexed,address indexed)",
       "event Transfer(address indexed,address indexed,uint256)",
-      "event ValidatedMusicContract(address indexed,bool)",
       "event WeiRefunded(address indexed,uint256)",
+      "event transferViaTokenSale(address indexed,uint256)",
+      "event validatedMusicContract(address indexed,bool)",
       "function DOMAIN_SEPARATOR() view returns (bytes32)",
       "function allowance(address,address) view returns (uint256)",
       "function approve(address,uint256) returns (bool)",
@@ -41,6 +40,7 @@
       "function owner() view returns (address)",
       "function permit(address,address,uint256,uint256,uint8,bytes32,bytes32)",
       "function renounceOwnership()",
+      "function sellOysterToken(address,uint256) payable returns (bool)",
       "function setVault(address)",
       "function symbol() view returns (string)",
       "function totalSupply() view returns (uint256)",
@@ -53,15 +53,17 @@
     ]
   },
   "oysterVault": {
-    "address": "0xaDbB6660BadAa006B87c1379D9C3742f7ea95735",
+    "address": "0x378A50FF260C5dD3c082C67d67c4Eaf38422af1c",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
       "error OwnableUnauthorizedAccount(address)",
       "event OwnershipTransferred(address indexed,address indexed)",
       "event TokensDistributed(address indexed,uint256)",
+      "event TokensRecieved(address indexed,uint256)",
       "function owner() view returns (address)",
       "function oysterToken() view returns (address)",
+      "function receiveTokens(address,uint256) returns (bool)",
       "function renounceOwnership()",
       "function sendToken(address,uint256) returns (bool)",
       "function transferOwnership(address)",
@@ -69,21 +71,34 @@
     ]
   },
   "musicContract": {
-    "address": "0xdb556c910f7dAD5938eEcb29FCb5ee081fF8c5Ab",
+    "address": "0xA300D892b3F35FD22921afDA719E33dCf7e3282a",
     "abi": [
-      "constructor(address)",
+      "constructor(address,address,uint256,uint256)",
       "event assignedRight(address indexed,address indexed,uint8)",
+      "event musicHeard(address indexed,bool)",
       "event musicWithSealedRights(address indexed,bool)",
+      "event purchaseMade(address indexed,bool)",
+      "event tokenAssigned(address indexed,uint256)",
       "event withdrawalRight(address indexed,address indexed,uint8)",
       "function assignRights(address,uint8) returns (bool)",
+      "function balanceTokens() view returns (uint256)",
+      "function buy100OysterToken() payable returns (bool)",
+      "function buyRightsMusic() payable returns (bool)",
       "function divisionOfRights(address) view returns (uint8)",
+      "function listenMusic() payable returns (bool)",
       "function musicContactIsSealed() view returns (bool)",
       "function owner() view returns (address)",
       "function oysterToken() view returns (address)",
       "function remainingRightsDivision() view returns (uint8)",
       "function rightHolders(uint256) view returns (address)",
+      "function rightPurchaseValueInGwei() view returns (uint256)",
       "function sealRights() returns (bool)",
-      "function withdrawRights(address,uint8) returns (bool)"
+      "function sellOysterToken(uint256) returns (bool)",
+      "function tokensPerAddress(address) view returns (uint256)",
+      "function valueForListeningInGwei() view returns (uint256)",
+      "function viewBalance() view returns (uint256)",
+      "function withdrawRights(address,uint8) returns (bool)",
+      "receive() payable"
     ]
   }
 }
