@@ -3,7 +3,7 @@ const path = require("path");
 const dotenv = require("dotenv");
 
 async function updateEnvFile(deployData) {
-  const envPath = path.join(__dirname, "..", "backend", ".env");
+    const envPath = path.join(__dirname, "..", ".env");
 
   // Carregar variáveis de ambiente existentes
   const envConfig = dotenv.parse(fs.readFileSync(envPath));

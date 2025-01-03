@@ -9,19 +9,23 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
     OysterVault public vault;
     mapping(address => bool) public validMusicContracts;
 
+    uint256 public businessRateWei = 200_000 * 1e9; // Variável pública para businessRateWei
+    uint256 public gweiPerToken = 50_000; // Variável pública para gweiPerToken
+
     event validatedMusicContract(address indexed _address, bool valid);
     event WeiRefunded(address indexed to, uint256 weiAmount);
     event transferViaTokenSale(address indexed to, uint256 weiAmount);
 
-    modifier onlyValidMusicContract() {
-        require(validMusicContracts[msg.sender], "This function can only be called by the valid MusicContract address");
-        _;
-    }
+    // Removendo o modifier onlyValidMusicContract
+    // modifier onlyValidMusicContract() {
+    //     require(validMusicContracts[msg.sender], "This function can only be called by the valid MusicContract address");
+    //     _;
+    // }
 
-    constructor(address initialOwner) 
-        ERC20("OysterToken", "OST") 
-        Ownable(initialOwner) 
-        ERC20Permit("OysterToken") 
+    constructor(address initialOwner)
+        ERC20("OysterToken", "OST")
+        Ownable(initialOwner)
+        ERC20Permit("OysterToken")
     {}
 
     // Função para configurar o endereço do Vault após a implantação
@@ -45,20 +49,19 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         return true;
     }
 
-    // Função de comprar 100 tokens para o contrato de música
-    function buy100OSTToMusicContract() external payable onlyValidMusicContract returns (bool) {
-        uint256 businessRateWei = 200_000 * 1e9; 
-        uint256 tokensToBuy = 100;
-        uint256 gweiPerToken = 50_000; 
+    // Função de comprar 100 tokens para o contrato de música (modificada)
+    function buy100OSTToMusicContract(address _musicContractAddress) external payable returns (bool) {
+        //Verifica se o contrato de música é válido
+        require(validMusicContracts[_musicContractAddress], "Invalid MusicContract address");
 
-        uint256 weiRequired = tokensToBuy * gweiPerToken * 1e9 + businessRateWei;
+        uint256 weiRequired = 100 * gweiPerToken * 1e9 + businessRateWei;
 
         require(msg.value >= weiRequired, "Insufficient Wei sent to buy tokens");
 
         uint256 remainingWei = msg.value - weiRequired;
 
         // Garante que há tokens suficientes no vault antes de continuar
-        require(vault.viewTokensVault() >= tokensToBuy, "Not enough tokens in OysterToken contract");
+        require(vault.viewTokensVault() >= 100, "Not enough tokens in OysterToken contract");
 
         // Transfere o troco antes de realizar outras operações externas
         if (remainingWei > 0) {
@@ -67,15 +70,14 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         }
 
         // Garante a transferência de tokens
-        vault.sendToken(msg.sender, tokensToBuy);
+        vault.sendToken(msg.sender, 100);
 
         emit WeiRefunded(msg.sender, remainingWei);
         return true;
     }
 
-
     // Função para vender tokens
-    function sellOysterToken(address holder, uint256 amount) external payable onlyValidMusicContract returns (bool) {
+    function sellOysterToken(address holder, uint256 amount) external payable returns (bool) {
         require(amount > 0, "Amount must be greater than zero");
 
         vault.receiveTokens(msg.sender, amount);
@@ -84,9 +86,17 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         payable(holder).transfer(amountTransfer);
 
         emit transferViaTokenSale(holder, amountTransfer);
-        return true;
     }
 
+    // Getter para businessRateWei
+    function getBusinessRateWei() public view returns (uint256) {
+        return businessRateWei;
+    }
+
+    // Getter para gweiPerToken
+    function getGweiPerToken() public view returns (uint256) {
+        return gweiPerToken;
+    }
 }
 
 contract OysterVault is Ownable {
@@ -94,6 +104,7 @@ contract OysterVault is Ownable {
 
     event TokensDistributed(address indexed to, uint256 amount);
     event TokensRecieved(address indexed from, uint256 amount);
+    event WeiRefunded(address indexed to, uint256 weiAmount);
 
     modifier onlyOysterToken() {
         require(msg.sender == address(oysterToken), "This function can only be called by the oysterToken address");

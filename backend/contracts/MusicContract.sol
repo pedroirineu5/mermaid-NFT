@@ -160,21 +160,21 @@ contract MusicContract {
         return true;
     }
 
-    function buy100OysterToken() external payable isSealed returns (bool) {
-        require(
-            divisionOfRights[msg.sender] != 0,
-            "This function cannot be called by anyone who does not have rights to the song"
-        );
-        require(
-            address(this).balance >= 5300000 * 1e9,
-            "Insufficient Ether sent to buy tokens. Must have at least 0.0053 Ether"
-        );
+    // function buy100OysterToken() external payable isSealed returns (bool) {
+    //     require(
+    //         divisionOfRights[msg.sender] != 0,
+    //         "This function cannot be called by anyone who does not have rights to the song"
+    //     );
+    //     require(
+    //         address(this).balance >= 5300000 * 1e9,
+    //         "Insufficient Ether sent to buy tokens. Must have at least 0.0053 Ether"
+    //     );
 
-        balanceTokens += 100;
-        tokenSplit();
+    //     balanceTokens += 100;
+    //     tokenSplit();
 
-        return true;
-    }
+    //     return true;
+    // }
 
     function tokenSplit() internal returns (bool) {
         for (uint256 i = 0; i < rightHolders.length; i++) {
@@ -235,5 +235,9 @@ contract MusicContract {
 
     function viewBalance() external view returns (uint256) {
         return address(this).balance;
+    }
+
+    function getRightHolders() public view returns (address[] memory) {
+        return rightHolders;
     }
 }

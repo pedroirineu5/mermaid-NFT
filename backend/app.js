@@ -14,7 +14,8 @@ const {
   getDivisionOfRights,
   isMusicContractSealed,
   getTokensPerAddress,
-  getMusicContractBalance
+  getMusicContractBalance,
+  isMusicContractValid,
 } = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
 
@@ -22,6 +23,14 @@ require('dotenv').config();
 
 const app = express();
 const port = 3000;
+
+// Configurar o Express para serializar BigInt para JSON
+app.set('json replacer', function (key, value) {
+  if (typeof value === 'bigint') {
+    return value.toString();
+  }
+  return value;
+});
 
 app.use(express.json());
 
@@ -88,8 +97,19 @@ async function startApp() {
 
     app.post('/buy-tokens', async (req, res) => {
       try {
-        const transactionHash = await buy100OysterTokens();
-        res.send(`100 OysterTokens purchased! Transaction hash: ${transactionHash}`);
+        // Verificar se o contrato de música é válido antes de comprar tokens
+        const isContractValid = await isMusicContractValid(
+          process.env.MUSIC_CONTRACT_ADDRESS
+        );
+        if (!isContractValid) {
+          return res.status(400).send('Music contract is not valid.');
+        }
+        const transactionHash = await buy100OysterTokens(
+          process.env.MUSIC_CONTRACT_ADDRESS
+        );
+        res.send(
+          `100 OysterTokens purchased! Transaction hash: ${transactionHash}`
+        );
       } catch (error) {
         console.error(error);
         res.status(500).send(`Error purchasing tokens: ${error.message}`);
@@ -97,96 +117,108 @@ async function startApp() {
     });
 
     app.post('/sell-tokens', async (req, res) => {
-        const { amount } = req.body;
-        try {
-          const transactionHash = await sellOysterTokens(amount);
-          res.send(`${amount} OysterTokens sold! Transaction hash: ${transactionHash}`);
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error selling tokens: ${error.message}`);
-        }
-      });
+      const { amount } = req.body;
+      try {
+        const transactionHash = await sellOysterTokens(amount);
+        res.send(
+          `${amount} OysterTokens sold! Transaction hash: ${transactionHash}`
+        );
+      } catch (error) {
+        console.error(error);
+        res.status(500).send(`Error selling tokens: ${error.message}`);
+      }
+    });
 
     app.post('/buy-rights', async (req, res) => {
-        try {
-          const transactionHash = await buyMusicRights();
-          res.send(`Music rights purchased! Transaction hash: ${transactionHash}`);
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error purchasing music rights: ${error.message}`);
-        }
+      try {
+        const transactionHash = await buyMusicRights();
+        res.send(`Music rights purchased! Transaction hash: ${transactionHash}`);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send(`Error purchasing music rights: ${error.message}`);
+      }
     });
 
     app.post('/listen-music', async (req, res) => {
-        try {
-          const transactionHash = await listenToMusic();
-          res.send(`Music listened to! Transaction hash: ${transactionHash}`);
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error listening to music: ${error.message}`);
-        }
+      try {
+        const transactionHash = await listenToMusic();
+        res.send(`Music listened to! Transaction hash: ${transactionHash}`);
+      } catch (error) {
+        console.error(error);
+        res.status(500).send(`Error listening to music: ${error.message}`);
+      }
     });
 
     app.get('/right-holders', async (req, res) => {
-        try {
-          const rightHolders = await getRightHolders();
-          res.json(rightHolders);
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error fetching right holders: ${error.message}`);
-        }
+      try {
+        const rightHolders = await getRightHolders();
+        res.json(rightHolders);
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send(`Error fetching right holders: ${error.message}`);
+      }
     });
 
     app.get('/remaining-rights', async (req, res) => {
-        try {
-          const remainingRights = await getRemainingRightsDivision();
-          res.json({ remainingRights });
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error fetching remaining rights: ${error.message}`);
-        }
+      try {
+        const remainingRights = await getRemainingRightsDivision();
+        res.json({ remainingRights });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send(`Error fetching remaining rights: ${error.message}`);
+      }
     });
 
     app.get('/division-rights/:address', async (req, res) => {
-        const { address } = req.params;
-        try {
-          const divisionRights = await getDivisionOfRights(address);
-          res.json({ divisionRights });
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error fetching division of rights: ${error.message}`);
-        }
+      const { address } = req.params;
+      try {
+        const divisionRights = await getDivisionOfRights(address);
+        res.json({ divisionRights });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send(`Error fetching division of rights: ${error.message}`);
+      }
     });
 
     app.get('/is-sealed', async (req, res) => {
-        try {
-          const isSealed = await isMusicContractSealed();
-          res.json({ isSealed });
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error checking if contract is sealed: ${error.message}`);
-        }
+      try {
+        const isSealed = await isMusicContractSealed();
+        res.json({ isSealed });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send(`Error checking if contract is sealed: ${error.message}`);
+      }
     });
 
     app.get('/tokens/:address', async (req, res) => {
-        const { address } = req.params;
-        try {
-          const tokens = await getTokensPerAddress(address);
-          res.json({ tokens });
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error fetching tokens per address: ${error.message}`);
-        }
+      const { address } = req.params;
+      try {
+        const tokens = await getTokensPerAddress(address);
+        res.json({ tokens });
+      } catch (error) {
+        console.error(error);
+        res
+          .status(500)
+          .send(`Error fetching tokens per address: ${error.message}`);
+      }
     });
 
     app.get('/balance', async (req, res) => {
-        try {
-          const balance = await getMusicContractBalance();
-          res.json({ balance });
-        } catch (error) {
-          console.error(error);
-          res.status(500).send(`Error fetching contract balance: ${error.message}`);
-        }
+      try {
+        const balance = await getMusicContractBalance();
+        res.json({ balance });
+      } catch (error) {
+        console.error(error);
+        res.status(500).send(`Error fetching contract balance: ${error.message}`);
+      }
     });
 
     app.listen(port, () => {

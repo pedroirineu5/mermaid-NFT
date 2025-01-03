@@ -122,15 +122,15 @@ async function withdrawMusicRights(address, percentage) {
 }
 
 // Funções atualizadas para interagir com OysterToken e MusicContract
-async function buy100OysterTokens() {
+async function buy100OysterTokens(address) {
     if (!oysterTokenInstance) {
         throw new Error('OysterToken contract not initialized.');
     }
       
-    console.log(`Buying 100 Oyster tokens...`);
+    console.log(`Buying 100 Oyster tokens to ${address}...`);
     try {
-        const result = await oysterTokenInstance.buy100OSTToMusicContract({
-            value: await oysterTokenInstance.getBusinessRateWei() + (await oysterTokenInstance.gweiPerToken() * 100) * (10 ** 9)
+        const result = await oysterTokenInstance.buy100OSTToMusicContract(address, {
+            value: (await oysterTokenInstance.getBusinessRateWei()) + ((await oysterTokenInstance.getGweiPerToken()) * BigInt(100) * (10n ** 9n))
         });
         await result.wait();
         console.log('Transaction result:', result);
@@ -148,7 +148,7 @@ async function sellOysterTokens(amount) {
   
     console.log(`Selling ${amount} Oyster tokens...`);
     try {
-        const result = await oysterTokenInstance.sellOysterToken(musicContractInstance.target, amount);
+        const result = await oysterTokenInstance.sellOysterToken(musicContractInstance.target, BigInt(amount));
         await result.wait();
         console.log('Transaction result:', result);
         return result.hash;
@@ -166,7 +166,7 @@ async function buyMusicRights() {
     console.log(`Buying music rights...`);
     try {
         const result = await musicContractInstance.buyRightsMusic({
-            value: await musicContractInstance.rightPurchaseValueInGwei() * (10 ** 9)
+            value: await musicContractInstance.rightPurchaseValueInGwei() * (10n ** 9n)
         });
         await result.wait();
         console.log('Transaction result:', result);
@@ -185,7 +185,7 @@ async function listenToMusic() {
     console.log(`Listening to music...`);
     try {
         const result = await musicContractInstance.listenMusic({
-            value: await musicContractInstance.valueForListeningInGwei() * (10 ** 9)
+            value: await musicContractInstance.valueForListeningInGwei() * (10n ** 9n)
         });
         await result.wait();
         console.log('Transaction result:', result);
@@ -197,16 +197,16 @@ async function listenToMusic() {
 }
 
 async function getRightHolders() {
-  if (!musicContractInstance) {
-    throw new Error('Music contract not initialized.');
+    if (!musicContractInstance) {
+      throw new Error('Music contract not initialized.');
+    }
+  
+    console.log('Getting right holders...');
+  
+    const result = await musicContractInstance.getRightHolders();
+    console.log('Right holders:', result);
+    return result;
   }
-
-  console.log('Getting right holders...');
-
-  const result = await musicContractInstance.getRightHolders();
-  console.log('Right holders:', result);
-  return result;
-}
 
 async function getRemainingRightsDivision() {
   if (!musicContractInstance) {
@@ -268,6 +268,22 @@ async function getMusicContractBalance() {
     return result;
 }
 
+async function isMusicContractValid(addressMusicContract) {
+    if (!oysterTokenInstance) {
+      throw new Error('OysterToken contract not initialized.');
+    }
+  
+    console.log(`Checking if music contract is valid: ${addressMusicContract}`);
+    try {
+      const isValid = await oysterTokenInstance.validMusicContracts(addressMusicContract);
+      console.log('Music contract valid:', isValid);
+      return isValid;
+    } catch (error) {
+      console.error('Error checking music contract validity:', error);
+      throw new Error(`Failed to check music contract validity: ${error.message}`);
+    }
+}
+
 module.exports = {
   initializeBlockchainService,
   validateMusicContract,
@@ -283,5 +299,6 @@ module.exports = {
   getDivisionOfRights,
   isMusicContractSealed,
   getTokensPerAddress,
-  getMusicContractBalance
+  getMusicContractBalance,
+  isMusicContractValid
 };

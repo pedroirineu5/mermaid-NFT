@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0x22B272a1Bb83D4b4C4F945b31aD2EdEda53bf2D0",
+    "address": "0x0F330570C9a014E70C751318A01fd539cA868AbB",
     "abi": [
       "constructor(address)",
       "error ECDSAInvalidSignature()",
@@ -31,9 +31,13 @@
       "function allowance(address,address) view returns (uint256)",
       "function approve(address,uint256) returns (bool)",
       "function balanceOf(address) view returns (uint256)",
-      "function buy100OSTToMusicContract() payable returns (bool)",
+      "function businessRateWei() view returns (uint256)",
+      "function buy100OSTToMusicContract(address) payable returns (bool)",
       "function decimals() view returns (uint8)",
       "function eip712Domain() view returns (bytes1,string,string,uint256,address,bytes32,uint256[])",
+      "function getBusinessRateWei() view returns (uint256)",
+      "function getGweiPerToken() view returns (uint256)",
+      "function gweiPerToken() view returns (uint256)",
       "function mintToVault(uint256)",
       "function name() view returns (string)",
       "function nonces(address) view returns (uint256)",
@@ -53,7 +57,7 @@
     ]
   },
   "oysterVault": {
-    "address": "0x378A50FF260C5dD3c082C67d67c4Eaf38422af1c",
+    "address": "0xE3480462D658B4F3764A7F875f15A45fbD522F17",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
@@ -61,6 +65,7 @@
       "event OwnershipTransferred(address indexed,address indexed)",
       "event TokensDistributed(address indexed,uint256)",
       "event TokensRecieved(address indexed,uint256)",
+      "event WeiRefunded(address indexed,uint256)",
       "function owner() view returns (address)",
       "function oysterToken() view returns (address)",
       "function receiveTokens(address,uint256) returns (bool)",
@@ -71,7 +76,7 @@
     ]
   },
   "musicContract": {
-    "address": "0xA300D892b3F35FD22921afDA719E33dCf7e3282a",
+    "address": "0xe9d671C6183FE2e9b5C8000F94FC6E1472B9857a",
     "abi": [
       "constructor(address,address,uint256,uint256)",
       "event assignedRight(address indexed,address indexed,uint8)",
@@ -82,9 +87,9 @@
       "event withdrawalRight(address indexed,address indexed,uint8)",
       "function assignRights(address,uint8) returns (bool)",
       "function balanceTokens() view returns (uint256)",
-      "function buy100OysterToken() payable returns (bool)",
       "function buyRightsMusic() payable returns (bool)",
       "function divisionOfRights(address) view returns (uint8)",
+      "function getRightHolders() view returns (address[])",
       "function listenMusic() payable returns (bool)",
       "function musicContactIsSealed() view returns (bool)",
       "function owner() view returns (address)",
