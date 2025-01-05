@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/devitruvius/Projects/mermaid-NFT/backend/contracts/MusicContract.sol": {
-      "lastModificationDate": 1736090233024,
-      "contentHash": "ebf4caeb8f5599c401d13c80fc9b327d",
+      "lastModificationDate": 1736099555287,
+      "contentHash": "c8a6f8cb21c970f54f7af100dce7ab90",
       "sourceName": "contracts/MusicContract.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -43,8 +43,8 @@
       ]
     },
     "/home/devitruvius/Projects/mermaid-NFT/backend/contracts/OysterToken.sol": {
-      "lastModificationDate": 1736089821023,
-      "contentHash": "8254180f1f34d28e22789c6e461ef97e",
+      "lastModificationDate": 1736097791247,
+      "contentHash": "94550bada9ad8e850959fcac2aee1a06",
       "sourceName": "contracts/OysterToken.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -85,7 +85,7 @@
       ]
     },
     "/home/devitruvius/Projects/mermaid-NFT/backend/contracts/OysterVault.sol": {
-      "lastModificationDate": 1736090216977,
+      "lastModificationDate": 1736097781996,
       "contentHash": "173d5a606e2c5bebe02af93b24f9d837",
       "sourceName": "contracts/OysterVault.sol",
       "solcConfig": {

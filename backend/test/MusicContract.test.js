@@ -13,6 +13,7 @@ describe("MusicContract", function () {
     let seller;
     const initialSupply = ethers.parseUnits("1000000", 18);
     const gweiPerToken = 50000 * 1e9;
+    const initialTransferToMusicContract = ethers.parseUnits("100", 18);
 
     beforeEach(async function () {
         [owner, buyer, seller] = await ethers.getSigners();
@@ -40,56 +41,69 @@ describe("MusicContract", function () {
         await oysterToken.validateMusicContracts(musicContractAddress);
         await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
 
-        this.buyTokens = async function (buyer, musicContract, weiAmount) {
+        // Aprovar OysterVault para transferir tokens de volta do MusicContract
+        await oysterToken.connect(owner).approve(oysterVaultAddress, ethers.MaxUint256);
+        // Transferir tokens para o MusicContract antes dos testes
+        await oysterVault.connect(owner).sendToken(musicContractAddress, initialTransferToMusicContract);
+
+        this.buyTokens = async function (buyer, amount) {
             console.log("buyTokens called with:");
             console.log("  buyer:", buyer.address);
-            console.log("  musicContract:", musicContract.address);
-            console.log("  weiAmount:", weiAmount.toString());
+            console.log("  musicContract:", musicContractAddress);
+            console.log("  amount:", amount.toString());
             const tx = await oysterToken
                 .connect(buyer)
-                .buyTokens(musicContract.address, { value: weiAmount });
+                .buyTokens(musicContractAddress, amount, { value: amount * BigInt(gweiPerToken) });
             return await tx.wait();
         };
     });
 
     it("Should allow buying tokens", async function () {
-        const weiAmount = ethers.parseUnits("0.001", "ether");
-        const tokensToBuy = weiAmount / BigInt(gweiPerToken);
+        // Comprar tokens, por exemplo, 20
+        const amount = 20n;
 
-        const receipt = await this.buyTokens(buyer, musicContract, weiAmount);
+        const receipt = await this.buyTokens(buyer, amount);
 
-        const tokensPurchasedEvent = receipt.logs.find((log) =>
-            log.topics.includes(
-                musicContract.interface.getEvent("TokensPurchased").topic
-            )
+        const events = await musicContract.queryFilter(
+            musicContract.filters.TokensPurchased,
+            receipt.blockNumber,
+            receipt.blockNumber
         );
+
+        const tokensPurchasedEvent = events[0];
 
         expect(tokensPurchasedEvent).to.not.be.undefined;
         expect(tokensPurchasedEvent.args.buyer).to.equal(buyer.address);
-        expect(tokensPurchasedEvent.args.amount).to.equal(tokensToBuy);
+        expect(tokensPurchasedEvent.args.amount).to.equal(amount);
         expect(await musicContract.viewTokensPerAddress(buyer.address)).to.equal(
-            tokensToBuy
+            amount
         );
     });
 
     it("Should allow selling tokens", async function () {
-        const weiAmount = ethers.parseUnits("0.001", "ether");
-        const tokensToBuy = weiAmount / BigInt(gweiPerToken);
-        await this.buyTokens(buyer, musicContract, weiAmount);
+        // Comprar tokens, por exemplo, 20
+        const amount = 20n;
+        await this.buyTokens(buyer, amount);
 
-        const sellAmount = tokensToBuy / BigInt(2);
+        // Vender metade dos tokens, por exemplo, 10
+        const sellAmount = 10n;
         const initialSellerBalance = await ethers.provider.getBalance(
             buyer.address
         );
 
+        // Aprovar o OysterVault para transferir tokens do MusicContract ANTES de chamar sellTokens
+        await musicContract.connect(buyer).approve(oysterVault.getAddress(), amount);
+
         const tx = await musicContract.connect(buyer).sellTokens(sellAmount);
         const receipt = await tx.wait();
 
-        const sellTokensEvent = receipt.logs.find((log) =>
-            log.topics.includes(
-                musicContract.interface.getEvent("SellTokens").topic
-            )
+        const events = await musicContract.queryFilter(
+            musicContract.filters.SellTokens,
+            receipt.blockNumber,
+            receipt.blockNumber
         );
+
+        const sellTokensEvent = events[0];
         expect(sellTokensEvent).to.not.be.undefined;
         expect(sellTokensEvent.args.caller).to.equal(buyer.address);
         expect(sellTokensEvent.args.amount).to.equal(sellAmount);
@@ -101,17 +115,17 @@ describe("MusicContract", function () {
         expect(finalSellerBalance).to.be.greaterThan(initialSellerBalance);
         expect(
             await musicContract.viewTokensPerAddress(buyer.address)
-        ).to.equal(tokensToBuy - sellAmount);
+        ).to.equal(amount - sellAmount);
     });
 
     it("Should revert if selling zero tokens", async function () {
-        const weiAmount = ethers.parseUnits("0.001", "ether");
-        const tokensToBuy = weiAmount / BigInt(gweiPerToken);
-        await this.buyTokens(buyer, musicContract, weiAmount);
+        // Comprar tokens, por exemplo, 20
+        const amount = 20n;
+        await this.buyTokens(buyer, amount);
 
         await expect(
             musicContract.connect(buyer).sellTokens(0)
-        ).to.be.revertedWith("Insufficient token balance");
+        ).to.be.revertedWith("Amount must be greater than zero");
     });
 
     it("Should allow assigning full rights", async function () {
@@ -120,11 +134,12 @@ describe("MusicContract", function () {
             .assignFullRights(buyer.address);
         const receipt = await tx.wait();
 
-        const fullRightsAssignedEvent = receipt.logs.find((log) =>
-            log.topics.includes(
-                musicContract.interface.getEvent("FullRightsAssigned").topic
-            )
+        const events = await musicContract.queryFilter(
+            musicContract.filters.FullRightsAssigned,
+            receipt.blockNumber,
+            receipt.blockNumber
         );
+        const fullRightsAssignedEvent = events[0];
 
         console.log("FullRightsAssigned Event:", fullRightsAssignedEvent);
 
@@ -157,11 +172,13 @@ describe("MusicContract", function () {
         const tx = await musicContract.connect(owner).sealRights();
         const receipt = await tx.wait();
 
-        const rightsSealedEvent = receipt.logs.find((log) =>
-            log.topics.includes(
-                musicContract.interface.getEvent("RightsSealed").topic
-            )
+        const events = await musicContract.queryFilter(
+            musicContract.filters.RightsSealed,
+            receipt.blockNumber,
+            receipt.blockNumber
         );
+
+        const rightsSealedEvent = events[0];
 
         console.log("RightsSealed Event:", rightsSealedEvent);
 

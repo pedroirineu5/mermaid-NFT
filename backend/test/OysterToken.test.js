@@ -62,12 +62,12 @@ describe("OysterToken", function () {
         const invalidMusicContractAddress =
             await invalidMusicContract.getAddress();
 
-        const weiAmount = ethers.parseUnits("0.001", "ether");
+        const amount = 1n;
 
         await expect(
             oysterToken
                 .connect(buyer)
-                .buyTokens(invalidMusicContractAddress, { value: weiAmount })
+                .buyTokens(invalidMusicContractAddress, amount, { value: amount * BigInt(gweiPerToken) })
         ).to.be.revertedWith("Invalid MusicContract address");
     });
 });

@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0xeE23a3B0CF4723fFb12CfA18026996dde8EbB57D",
+    "address": "0x8584eEB1EDBb583ab53e5F6482Da7dDE08430D51",
     "abi": [
       "constructor(address,uint256)",
       "error ECDSAInvalidSignature()",
@@ -32,7 +32,7 @@
       "function allowance(address,address) view returns (uint256)",
       "function approve(address,uint256) returns (bool)",
       "function balanceOf(address) view returns (uint256)",
-      "function buyTokens(address) payable",
+      "function buyTokens(address,uint256) payable",
       "function decimals() view returns (uint8)",
       "function eip712Domain() view returns (bytes1,string,string,uint256,address,bytes32,uint256[])",
       "function gweiPerToken() view returns (uint256)",
@@ -56,17 +56,23 @@
     "gweiPerToken": 50000000000000
   },
   "oysterVault": {
-    "address": "0x7d7eA2c30BCE4B7393E2dF0d9D3E104Ed417d8Bf",
+    "address": "0x5A1E4F6f7748D35848a78b790b2eA53215E25843",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
       "error OwnableUnauthorizedAccount(address)",
+      "event ContractAuthorized(address indexed,bool)",
+      "event Log(string)",
+      "event LogAddress(string,address)",
+      "event LogUint(string,uint256)",
       "event OwnershipTransferred(address indexed,address indexed)",
       "event ReceiveTokens(address indexed,uint256)",
       "event SendToken(address indexed,uint256)",
       "event TokensDistributed(address indexed,uint256)",
       "event TokensRecieved(address indexed,uint256)",
       "event WeiRefunded(address indexed,uint256)",
+      "function authorizeContract(address,bool)",
+      "function authorizedContracts(address) view returns (bool)",
       "function owner() view returns (address)",
       "function oysterToken() view returns (address)",
       "function receiveTokens(address,uint256) returns (bool)",
@@ -77,16 +83,20 @@
     ]
   },
   "musicContract": {
-    "address": "0xd6bF3c882B7EBBffC8A488597ad95D9Dea598101",
+    "address": "0x4c02d2B1d35C7c528e84e7b0d955a8c39D24A90b",
     "abi": [
       "constructor(address,address,address,uint256)",
       "error OwnableInvalidOwner(address)",
       "error OwnableUnauthorizedAccount(address)",
       "event FullRightsAssigned(address indexed,uint256)",
+      "event Log(string)",
+      "event LogAddress(string,address)",
+      "event LogUint(string,uint256)",
       "event OwnershipTransferred(address indexed,address indexed)",
       "event RightsSealed(address indexed)",
       "event SellTokens(address indexed,uint256)",
       "event TokensPurchased(address indexed,uint256)",
+      "function approve(address,uint256) returns (bool)",
       "function assignFullRights(address) returns (bool)",
       "function divisionOfRights(address) view returns (uint256)",
       "function getRemainingRightsDivision() view returns (uint256)",

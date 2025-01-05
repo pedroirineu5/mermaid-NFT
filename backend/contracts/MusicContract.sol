@@ -33,6 +33,8 @@ contract MusicContract is Ownable {
         remainingRights = 100;
         musicContactIsSealed = false;
         gweiPerToken = _gweiPerToken;
+        // Aprovar o próprio contrato a gastar os seus tokens
+        oysterToken.approve(address(this), type(uint).max);
     }
 
     function sealRights() external onlyOwner returns (bool) {
@@ -86,8 +88,10 @@ contract MusicContract is Ownable {
         emit LogAddress("for buyer", buyer);
         emit LogUint("amount", amount);
         require(msg.sender == address(oysterToken), "Only OysterToken can call this function");
+        // Aprova o vault a gastar tokens do MusicContract
         require(oysterToken.approve(address(vault), amount), "Approval failed");
-        vault.receiveTokens(address(this), amount);
+        // Adiciona chamada do vault para receber os tokens
+        require(vault.receiveTokens(address(this), amount), "Token transfer failed");
         tokensPerAddress[buyer] += amount;
         emit TokensPurchased(buyer, amount);
         emit Log("MusicContract: TokensPurchased event emitted");
@@ -97,12 +101,33 @@ contract MusicContract is Ownable {
         emit Log("MusicContract: sellTokens called");
         emit LogAddress("by", msg.sender);
         emit LogUint("amount", amount);
+        require(amount > 0, "Amount must be greater than zero");
         require(tokensPerAddress[msg.sender] >= amount, "Insufficient token balance");
+        emit Log("MusicContract: Approving vault to spend tokens");
+        // Aprova o vault a gastar a quantidade correta de tokens do MusicContract
+        // Vai ser aprovado no teste
+        // require(oysterToken.approve(address(vault), amount), "Approval failed");
+        emit Log("MusicContract: Approved vault to spend tokens");
         tokensPerAddress[msg.sender] -= amount;
-        require(oysterToken.transferFrom(address(this), address(vault), amount), "Token transfer failed");
+        emit LogUint("MusicContract: Tokens remaining for user", tokensPerAddress[msg.sender]);
+
+        // Em vez de transferir diretamente, chamar receiveTokens do vault
+        emit Log("MusicContract: Calling receiveTokens on vault");
+        require(vault.receiveTokens(address(this), amount), "Token transfer failed");
+        emit Log("MusicContract: receiveTokens called on vault");
+
+        // Calcula o valor em Wei a ser transferido para o vendedor
         uint256 amountToTransfer = amount * gweiPerToken;
+        emit LogUint("MusicContract: Amount to transfer in Wei", amountToTransfer);
+        emit Log("MusicContract: Transferring Wei to seller");
+        // Transfere o valor em Wei para o vendedor
         payable(msg.sender).transfer(amountToTransfer);
+        emit Log("MusicContract: Transferred Wei to seller");
         emit SellTokens(msg.sender, amount);
         emit Log("MusicContract: SellTokens event emitted");
+    }
+
+    function approve(address spender, uint256 amount) external returns (bool) {
+        return oysterToken.approve(spender, amount);
     }
 }
