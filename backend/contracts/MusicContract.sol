@@ -1,243 +1,89 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "contracts/OysterToken.sol";
-import "hardhat/console.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./OysterToken.sol";
 
-contract MusicContract {
-    OysterToken public oysterToken;
+contract MusicContract is Ownable {
+    IERC20 public oysterToken;
+    OysterVault public vault;
 
-    uint256 public rightPurchaseValueInGwei;
-    uint256 public valueForListeningInGwei;
-
-    address public owner;
-    mapping(address => uint8) public divisionOfRights;
-    uint8 public remainingRightsDivision;
-    address[] public rightHolders;
-    bool public musicContactIsSealed;
-    uint256 public balanceTokens;
     mapping(address => uint256) public tokensPerAddress;
+    mapping(address => uint256) public rightAssigned;
+    address[] public rightHolders;
 
-    event assignedRight(
-        address indexed addressRight,
-        address indexed addressThisMusicContract,
-        uint8 percentageOfRights
-    );
-    event withdrawalRight(
-        address indexed addressRight,
-        address indexed addressThisMusicContract,
-        uint8 percentageOfRights
-    );
-    event musicWithSealedRights(
-        address indexed addressThisMusicContract,
-        bool musicContactIsSealed
-    );
-    event tokenAssigned(
-        address indexed addressHolderToken,
-        uint256 amountToken
-    );
-    event purchaseMade(address indexed purchaseAddress, bool activated);
-    event musicHeard(address indexed hearAddress, bool confirm);
+    uint256 public remainingRights;
+    bool public musicContactIsSealed;
+    uint256 public gweiPerToken;
 
-    modifier onlyOwner() {
-        require(
-            msg.sender == owner,
-            "This function can only be called by the owner address"
-        );
-        _;
-    }
+    event FullRightsAssigned(address indexed to, uint256 timestamp);
+    event SellTokens(address indexed caller, uint256 amount);
+    event TokensPurchased(address indexed buyer, uint256 amount);
+    event RightsSealed(address indexed caller);
 
-    modifier isSealed() {
-        require(
-            musicContactIsSealed,
-            "The contract is not sealed. This transaction can only be done with a sealed contract"
-        );
-        _;
-    }
-
-    constructor(
-        OysterToken _oysterTokenContract,
-        address _owner,
-        uint256 _rightPurchaseValue,
-        uint256 _valueForListening
-    ) {
-        remainingRightsDivision = 100;
-        oysterToken = _oysterTokenContract;
-        rightPurchaseValueInGwei = _rightPurchaseValue;
-        valueForListeningInGwei = _valueForListening;
-        owner = _owner;
-    }
-
-    receive() external payable {}
-
-    function assignRights(
-        address addressRight,
-        uint8 percentageOfRights
-    ) external onlyOwner returns (bool) {
-        require(
-            !musicContactIsSealed,
-            "The contract is already sealed, no modification of rights can be made"
-        );
-        require(
-            percentageOfRights > 0,
-            "Percentage of rights must be greater than 0"
-        );
-        require(
-            percentageOfRights <= remainingRightsDivision,
-            "percentage of entitlements remaining is less than the requested amount"
-        );
-
-        if (divisionOfRights[addressRight] == 0) {
-            rightHolders.push(addressRight);
-        }
-
-        divisionOfRights[addressRight] += percentageOfRights;
-        remainingRightsDivision -= percentageOfRights;
-
-        emit assignedRight(addressRight, address(this), percentageOfRights);
-
-        return true;
-    }
-
-    function withdrawRights(
-        address addressRight,
-        uint8 percentageOfRights
-    ) external onlyOwner returns (bool) {
-        require(
-            !musicContactIsSealed,
-            "The contract is already sealed, no modification of rights can be made"
-        );
-        require(
-            divisionOfRights[addressRight] != 0,
-            "No rights have been defined for this address"
-        );
-        require(
-            divisionOfRights[addressRight] >= percentageOfRights,
-            "It is not possible to remove more rights than this address has"
-        );
-
-        divisionOfRights[addressRight] -= percentageOfRights;
-        remainingRightsDivision += percentageOfRights;
-
-        if (divisionOfRights[addressRight] == 0) {
-            removeRightHolder(addressRight);
-        }
-
-        emit withdrawalRight(addressRight, address(this), percentageOfRights);
-        return true;
-    }
-
-    function removeRightHolder(address _address) internal {
-        uint256 index = findIndex(_address);
-
-        rightHolders[index] = rightHolders[rightHolders.length - 1];
-
-        rightHolders.pop();
-    }
-
-    function findIndex(address _address) internal view returns (uint256) {
-        for (uint256 i = 0; i < rightHolders.length; i++) {
-            if (rightHolders[i] == _address) {
-                return i;
-            }
-        }
-
-        return rightHolders.length;
+    constructor(IERC20 _oysterToken, address initialOwner, OysterVault _vault, uint256 _gweiPerToken) Ownable(initialOwner) {
+        oysterToken = _oysterToken;
+        vault = _vault;
+        remainingRights = 100;
+        musicContactIsSealed = false;
+        gweiPerToken = _gweiPerToken;
     }
 
     function sealRights() external onlyOwner returns (bool) {
-        require(
-            remainingRightsDivision == 0,
-            "The remaining divisions of rights must be 0 to seal this contract"
-        );
-
+        require(remainingRights == 0, "The contract cannot be sealed until all rights have been assigned");
+        require(!musicContactIsSealed, "The contract is already sealed");
         musicContactIsSealed = true;
-        emit musicWithSealedRights(address(this), true);
+        emit RightsSealed(msg.sender);
         return true;
     }
 
-    function buy100OysterToken() external isSealed returns (bool) {
-        require(
-            divisionOfRights[msg.sender] != 0,
-            "This function cannot be called by anyone who does not have rights to the song"
-        );
-         
-        tokensPerAddress[msg.sender] += 100;
-        balanceTokens += 100;
-        emit tokenAssigned(msg.sender, 100);
+    function assignFullRights(address _to) external onlyOwner returns (bool) {
+        require(!musicContactIsSealed, "The contract is already sealed, no modification of rights can be made");
+        require(remainingRights > 0, "There are no rights left to assign");
+        rightAssigned[_to] = 100;
+        remainingRights = 0;
+        rightHolders.push(_to);
+        emit FullRightsAssigned(_to, block.timestamp);
         return true;
     }
 
-    function tokenSplit() internal returns (bool) {
-        for (uint256 i = 0; i < rightHolders.length; i++) {
-            uint256 amount = (balanceTokens * divisionOfRights[rightHolders[i]]) / 100;
-           
-            IERC20(oysterToken).transfer(rightHolders[i], amount);
-            emit tokenAssigned(rightHolders[i], amount);
-            
-        }
-         balanceTokens = 0;
-        return true;
-    }
-
-   function sellOysterToken(uint256 amount) external isSealed returns (bool) {
-        require(
-            divisionOfRights[msg.sender] != 0,
-            "This function cannot be called by anyone who does not have rights to the song"
-        );
-        require(
-            amount > 0,
-            "Number of tokens for requested transfer must be greater than 0"
-        );
-        require(
-            tokensPerAddress[msg.sender] >= amount,
-            "Number of tokens unavailable"
-        );
-         tokensPerAddress[msg.sender] -= amount;
-        balanceTokens -= amount;
-        oysterToken.sellOysterToken(msg.sender, amount);
-        return true;
-    }
-    function approveOysterVault(uint256 amount) external isSealed returns (bool) {
-         require(
-             divisionOfRights[msg.sender] != 0,
-             "This function cannot be called by anyone who does not have rights to the song"
-         );
-         oysterToken.approve(address(oysterToken.vault()), amount);
-         return true;
-     }
-
-
-    function buyRightsMusic() external payable isSealed returns (bool) {
-        uint256 valueBuyRight = rightPurchaseValueInGwei * 1e9;
-        require(
-            msg.value >= valueBuyRight,
-            "insufficient value to purchase the music rights"
-        );
-        uint256 remainingValue = msg.value - valueBuyRight;
-        emit purchaseMade(msg.sender, true);
-        payable(owner).transfer(valueBuyRight);
-        payable(msg.sender).transfer(remainingValue);
-        return true;
-    }
-
-    function listenMusic() external payable isSealed returns (bool) {
-        uint256 valueListen = valueForListeningInGwei * 1e9;
-        require(
-            msg.value >= valueListen,
-            "insufficient value to listen the music rights"
-        );
-        uint256 remainingValue = msg.value - valueListen;
-        emit musicHeard(msg.sender, true);
-        payable(msg.sender).transfer(remainingValue);
-        return true;
-    }
-
-    function viewBalance() external view returns (uint256) {
-        return address(this).balance;
-    }
-
-    function getRightHolders() public view returns (address[] memory) {
+    function getRightHolders() external view returns (address[] memory) {
         return rightHolders;
+    }
+
+    function getRemainingRightsDivision() external view returns (uint256) {
+        return remainingRights;
+    }
+
+    function divisionOfRights(address _of) external view returns (uint256) {
+        return rightAssigned[_of];
+    }
+
+    function viewTokensPerAddress(address _of) external view returns (uint256){
+        return tokensPerAddress[_of];
+    }
+
+    function isMusicContractSealed() external view returns (bool) {
+        return musicContactIsSealed;
+    }
+
+    function purchaseTokens(address buyer, uint256 amount) external {
+        require(msg.sender == address(oysterToken), "Only OysterToken can call this function");
+        tokensPerAddress[buyer] += amount;
+        emit TokensPurchased(buyer, amount);
+    }
+
+    function sellTokens(uint256 amount) external payable {
+        require(tokensPerAddress[msg.sender] >= amount, "Insufficient token balance");
+
+        // Transferir os tokens do vendedor para o Vault
+        tokensPerAddress[msg.sender] -= amount;
+        require(oysterToken.transferFrom(msg.sender, address(vault), amount), "Token transfer failed");
+
+        // Transferir Wei para o vendedor
+        uint256 amountToTransfer = amount * gweiPerToken;
+        payable(msg.sender).transfer(amountToTransfer);
+        emit SellTokens(msg.sender, amount);
     }
 }
