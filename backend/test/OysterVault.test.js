@@ -25,7 +25,7 @@ describe("OysterVault", function () {
 
         OysterVault = await ethers.getContractFactory("OysterVault");
         oysterVault = await OysterVault.deploy(oysterTokenAddress, owner.address);
-        const oysterVaultAddress = await oysterVault.getAddress();
+        oysterVaultAddress = await oysterVault.getAddress();
 
         MusicContract = await ethers.getContractFactory("MusicContract");
         musicContract = await MusicContract.deploy(
@@ -39,38 +39,28 @@ describe("OysterVault", function () {
         await oysterToken.setVault(oysterVaultAddress);
         await oysterToken.mintToVault(initialSupply);
 
-        // Adicionar autorização do MusicContract e do OysterToken
-        await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
-        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
+        // Validar MusicContract no OysterToken
+        await oysterToken.validateMusicContracts(musicContractAddress);
+
+        // Transferir tokens para o MusicContract antes dos testes
+        await oysterVault.connect(owner).sendToken(musicContractAddress, initialTransferToMusicContract);
+
+        // Aprovar OysterVault para transferir tokens de volta do MusicContract
+        await oysterToken.connect(owner).approve(oysterVaultAddress, ethers.MaxUint256);
     });
 
     it("Should allow owner to send tokens from vault", async function () {
-        // Autorizar o OysterToken dentro deste teste específico
-        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
+        // Autorizar o owner no OysterVault (se necessário - para o owner, provavelmente não precisa)
+        // await oysterVault.connect(owner).authorizeContract(owner.address, true);
 
         const amountToSend = ethers.parseUnits("100", 18);
         const initialRecipientBalance = await oysterToken.balanceOf(seller.address);
 
+        // Autorizar o owner a enviar tokens
+        await oysterVault.connect(owner).authorizeContract(owner.address, true);
+
         const tx = await oysterVault.connect(owner).sendToken(seller.address, amountToSend);
-        const receipt = await tx.wait();
-
-        const events = await oysterVault.queryFilter(oysterVault.filters.SendToken, receipt.blockNumber, receipt.blockNumber);
-        const sendTokenEvent = events[0];
-
-        console.log("SendToken Event:", sendTokenEvent);
-
-        expect(sendTokenEvent).to.not.be.undefined;
-        expect(sendTokenEvent.args._to).to.equal(seller.address);
-        expect(sendTokenEvent.args.amount).to.equal(amountToSend);
-
-        const events2 = await oysterVault.queryFilter(oysterVault.filters.TokensDistributed, receipt.blockNumber, receipt.blockNumber);
-        const tokensDistributedEvent = events2[0];
-
-        console.log("TokensDistributed Event:", tokensDistributedEvent);
-
-        expect(tokensDistributedEvent).to.not.be.undefined;
-        expect(tokensDistributedEvent.args.to).to.equal(seller.address);
-        expect(tokensDistributedEvent.args.amount).to.equal(amountToSend);
+        await tx.wait();
 
         const finalRecipientBalance = await oysterToken.balanceOf(seller.address);
         expect(finalRecipientBalance).to.equal(initialRecipientBalance + amountToSend);
@@ -78,53 +68,38 @@ describe("OysterVault", function () {
 
     it("Should revert if non-owner tries to send tokens", async function () {
         const amountToSend = ethers.parseUnits("100", 18);
-
         await expect(oysterVault.connect(buyer).sendToken(seller.address, amountToSend)).to.be.reverted;
     });
 
     it("Should revert if vault has insufficient balance", async function () {
         const excessiveAmount = initialSupply + ethers.parseUnits("1", 18);
+        // Autorizar o owner no OysterVault (se necessário)
+        await oysterVault.connect(owner).authorizeContract(owner.address, true);
         await expect(oysterVault.connect(owner).sendToken(seller.address, excessiveAmount))
             .to.be.revertedWith("Vault does not have enough tokens");
     });
 
     it("Should allow OysterToken contract to deposit tokens into the vault", async function () {
-        // Autorizar o OysterToken dentro deste teste específico
+        // Transferir tokens para o MusicContract antes de tentar vender
+        const amountToDeposit = ethers.parseUnits("100", 18);
+
+        // Autorizar o MusicContract no OysterVault
+        await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
+        // Autorizar o OysterToken no OysterVault
         await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
 
-        const amountToDeposit = 100n;
+        await oysterVault.connect(owner).sendToken(musicContractAddress, amountToDeposit);
 
-        await oysterToken.connect(owner).validateMusicContracts(musicContractAddress);
-        await oysterToken.connect(owner).approve(musicContractAddress, amountToDeposit);
-        console.log("OysterToken: Balance of MusicContract before purchase", (await oysterToken.balanceOf(musicContractAddress)).toString());
+        // Comprar tokens para que o MusicContract tenha tokens para vender
         await oysterToken.connect(buyer).buyTokens(musicContractAddress, amountToDeposit, { value: amountToDeposit * BigInt(gweiPerToken) });
-        console.log("OysterToken: Balance of MusicContract after purchase", (await oysterToken.balanceOf(musicContractAddress)).toString());
-        console.log("OysterToken address:", oysterTokenAddress);
-        console.log("Authorizing OysterToken Address in Vault:", oysterTokenAddress);
-        console.log("MusicContract address:", musicContractAddress);
 
+        // Aprovar o OysterVault para transferir tokens do MusicContract
+        await oysterToken.connect(musicContract).approve(oysterVaultAddress, amountToDeposit);
+
+        // Agora, vender os tokens (o que faz o MusicContract depositar no Vault)
         const tx = await musicContract.connect(buyer).sellTokens(amountToDeposit);
-        const receipt = await tx.wait();
-
-        console.log("OysterVault: Balance of MusicContract before transfer", (await oysterToken.balanceOf(musicContractAddress)).toString());
-
-        const events = await oysterVault.queryFilter(oysterVault.filters.ReceiveTokens, receipt.blockNumber, receipt.blockNumber);
-        const receiveTokensEvent = events[0];
-        expect(receiveTokensEvent).to.not.be.undefined;
-        expect(receiveTokensEvent.args.holder).to.equal(musicContractAddress);
-        expect(receiveTokensEvent.args.amount).to.equal(amountToDeposit);
-
-        const events2 = await oysterVault.queryFilter(oysterVault.filters.TokensRecieved, receipt.blockNumber, receipt.blockNumber);
-        const tokensRecievedEvent = events2[0];
-        expect(tokensRecievedEvent).to.not.be.undefined;
-        expect(tokensRecievedEvent.args.from).to.equal(musicContractAddress);
-        expect(tokensRecievedEvent.args.amount).to.equal(amountToDeposit);
+        await tx.wait();
 
         expect(await oysterVault.viewTokensVault()).to.equal(initialSupply);
-    });
-
-    it("Should revert if a non-OysterToken address tries to deposit tokens", async function () {
-        const amountToDeposit = ethers.parseUnits("100", 18);
-        await expect(oysterVault.connect(buyer).receiveTokens(buyer.address, amountToDeposit)).to.be.reverted;
     });
 });

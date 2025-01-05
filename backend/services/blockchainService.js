@@ -10,13 +10,26 @@ let oysterVaultInstance;
 let wallet;
 
 async function initializeBlockchainService() {
+    console.log("===== initializeBlockchainService =====");
     const deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
+    console.log("deployData:", deployData);
+
     const oysterTokenAddress = deployData.oysterToken.address;
     const oysterTokenABI = deployData.oysterToken.abi;
     const musicContractAddress = deployData.musicContract.address;
     const musicContractABI = deployData.musicContract.abi;
     const oysterVaultAddress = deployData.oysterVault.address;
     const oysterVaultABI = deployData.oysterVault.abi;
+
+    console.log("OYSTER_TOKEN_ADDRESS (from deployData):", oysterTokenAddress);
+    console.log("MUSIC_CONTRACT_ADDRESS (from deployData):", musicContractAddress);
+    console.log("OYSTER_VAULT_ADDRESS (from deployData):", oysterVaultAddress);
+
+    console.log("OYSTER_TOKEN_ADDRESS (from .env):", process.env.OYSTER_TOKEN_ADDRESS);
+    console.log("MUSIC_CONTRACT_ADDRESS (from .env):", process.env.MUSIC_CONTRACT_ADDRESS);
+    console.log("OYSTER_VAULT_ADDRESS (from .env):", process.env.OYSTER_VAULT_ADDRESS);
+    console.log("GWEI_PER_TOKEN (from .env):", process.env.GWEI_PER_TOKEN);
+    console.log("PRIVATE_KEY (from .env):", process.env.PRIVATE_KEY);
 
     const privateKey = process.env.PRIVATE_KEY;
 
@@ -27,35 +40,59 @@ async function initializeBlockchainService() {
     }
 
     wallet = new ethers.Wallet(privateKey, provider);
+    console.log("Wallet Address:", await wallet.getAddress());
 
     oysterTokenInstance = new ethers.Contract(
         oysterTokenAddress,
         oysterTokenABI,
         wallet
     );
+    console.log("oysterTokenInstance Address:", oysterTokenInstance.target);
 
     musicContractInstance = new ethers.Contract(
         musicContractAddress,
         musicContractABI,
         wallet
     );
+    console.log("musicContractInstance Address:", musicContractInstance.target);
 
     oysterVaultInstance = new ethers.Contract(
         oysterVaultAddress,
         oysterVaultABI,
         wallet
     );
+    console.log("oysterVaultInstance Address:", oysterVaultInstance.target);
+
+    console.log("===== initializeBlockchainService END =====");
 }
 
 async function validateMusicContract(addressMusicContract) {
+    console.log("===== validateMusicContract =====");
+    console.log("Validating Music Contract Address (input):", addressMusicContract);
     if (!oysterTokenInstance) {
         throw new Error('Blockchain service not initialized.');
     }
-    const result = await oysterTokenInstance.validateMusicContracts(
+    console.log("oysterTokenInstance Address (inside validateMusicContract):", oysterTokenInstance.target);
+
+    console.log("Calling validateMusicContracts with address:", addressMusicContract);
+    const tx = await oysterTokenInstance.validateMusicContracts(
         addressMusicContract
     );
-    await result.wait();
-    return result.hash;
+    console.log("Transaction:", tx);
+
+    const receipt = await tx.wait(); // Aguarda a transação ser minerada e obtém o recibo
+    console.log("Transaction Receipt:", receipt);
+
+    // Verifica o status da transação no recibo
+    if (receipt.status === 0) {
+        console.error("Transaction Reverted:", receipt);
+        throw new Error("Transaction reverted");
+    }
+
+    // Se a transação não foi revertida, prosseguimos
+    console.log("Transaction Hash:", tx.hash);
+    console.log("===== validateMusicContract END =====");
+    return { hash: tx.hash, isValid: true };
 }
 
 async function sealMusicContract() {

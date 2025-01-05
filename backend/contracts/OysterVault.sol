@@ -103,4 +103,8 @@ contract OysterVault is Ownable {
         authorizedContracts[contractAddress] = authorize;
         emit ContractAuthorized(contractAddress, authorize);
     }
+
+    function isContractAuthorized(address contractAddress) external view returns (bool) {
+        return authorizedContracts[contractAddress];
+    }
 }

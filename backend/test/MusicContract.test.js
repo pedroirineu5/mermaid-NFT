@@ -39,20 +39,18 @@ describe("MusicContract", function () {
         );
         musicContractAddress = await musicContract.getAddress();
 
+        // Validar MusicContract no OysterToken
         await oysterToken.validateMusicContracts(musicContractAddress);
-        await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
-        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
 
-        // Aprovar OysterVault para transferir tokens de volta do MusicContract
-        await oysterToken.connect(owner).approve(oysterVaultAddress, ethers.MaxUint256);
         // Transferir tokens para o MusicContract antes dos testes
         await oysterVault.connect(owner).sendToken(musicContractAddress, initialTransferToMusicContract);
 
+        // Aprovar OysterVault para transferir tokens de volta do MusicContract
+        await oysterToken.connect(owner).approve(oysterVaultAddress, ethers.MaxUint256);
+
         this.buyTokens = async function (buyer, amount) {
-            console.log("buyTokens called with:");
-            console.log("  buyer:", buyer.address);
-            console.log("  musicContract:", musicContractAddress);
-            console.log("  amount:", amount.toString());
+            // Autorizar o OysterToken no OysterVault DENTRO do buyTokens
+            await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
             const tx = await oysterToken
                 .connect(buyer)
                 .buyTokens(musicContractAddress, amount, { value: amount * BigInt(gweiPerToken) });
@@ -61,9 +59,8 @@ describe("MusicContract", function () {
     });
 
     it("Should allow buying tokens", async function () {
-        // Autorizar o OysterToken dentro deste teste específico
-        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
-
+        // Autorizar o MusicContract no OysterVault
+        await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
         const amount = 20n;
         const receipt = await this.buyTokens(buyer, amount);
         const events = await musicContract.queryFilter(musicContract.filters.TokensPurchased, receipt.blockNumber, receipt.blockNumber);
@@ -76,24 +73,16 @@ describe("MusicContract", function () {
     });
 
     it("Should allow selling tokens", async function () {
-        // Autorizar o OysterToken dentro deste teste específico
-        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
-
+        // Autorizar o MusicContract no OysterVault
+        await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
         const amount = 20n;
         await this.buyTokens(buyer, amount);
 
         const sellAmount = 10n;
         const initialSellerBalance = await ethers.provider.getBalance(buyer.address);
 
-        const allowanceBefore = await oysterToken.allowance(musicContract.getAddress(), oysterVault.getAddress());
-        console.log("Allowance before sellTokens:", allowanceBefore.toString());
-        await musicContract.connect(buyer).approve(oysterVault.getAddress(), amount);
-        const allowanceAfter = await oysterToken.allowance(musicContract.getAddress(), oysterVault.getAddress());
-        console.log("Allowance after sellTokens:", allowanceAfter.toString());
-
-        expect(allowanceAfter).to.be.greaterThanOrEqual(sellAmount);
-
-        console.log("MusicContract balance before selling:", (await oysterToken.balanceOf(musicContract.getAddress())).toString());
+        // Aprovação antes da venda
+        await oysterToken.connect(musicContract).approve(oysterVaultAddress, sellAmount);
 
         const tx = await musicContract.connect(buyer).sellTokens(sellAmount);
         const receipt = await tx.wait();
@@ -106,7 +95,6 @@ describe("MusicContract", function () {
         expect(sellTokensEvent.args.amount).to.equal(sellAmount);
 
         const finalSellerBalance = await ethers.provider.getBalance(buyer.address);
-
         expect(finalSellerBalance).to.be.greaterThan(initialSellerBalance);
         expect(await musicContract.viewTokensPerAddress(buyer.address)).to.equal(amount - sellAmount);
     });

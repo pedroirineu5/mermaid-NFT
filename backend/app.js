@@ -16,17 +16,20 @@ async function startApp() {
         app.post('/validate-music-contract', async (req, res) => {
             const { addressMusicContract } = req.body;
             try {
-                const transactionHash = await blockchainService.validateMusicContract(
+                const result = await blockchainService.validateMusicContract(
                     addressMusicContract
                 );
                 res.send({
                     message: 'Music contract validated!',
-                    transactionHash: transactionHash,
+                    transactionHash: result.hash,
                     musicContractAddress: addressMusicContract,
                 });
             } catch (error) {
                 console.error(error);
-                res.status(500).send(`Error validating music contract: ${error.message}`);
+                res.status(500).send({
+                    error: `Error validating music contract: ${error.message}`,
+                    musicContractAddress: addressMusicContract
+                });
             }
         });
 
