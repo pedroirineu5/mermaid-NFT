@@ -120,10 +120,6 @@ contract MusicContract is Ownable {
             address(this),
             oysterToken.balanceOf(address(this))
         );
-
-        // **Autorizar o MusicContract no OysterVault ANTES de aprovar**
-        vault.authorizeContract(address(this), true);
-
         // Aprova o vault a gastar tokens do MusicContract
         require(
             oysterToken.approve(address(vault), amount),
@@ -213,5 +209,9 @@ contract MusicContract is Ownable {
 
     function approve(address spender, uint256 amount) external returns (bool) {
         return oysterToken.approve(spender, amount);
+    }
+
+    function getContractType() external pure returns (string memory) {
+        return "MusicContract";
     }
 }

@@ -67,14 +67,14 @@ async function main() {
     await musicContract.waitForDeployment();
     console.log("MusicContract deployed to:", await musicContract.getAddress());
 
-    // Validar MusicContract no OysterToken
-    const validateTx = await oysterToken.validateMusicContracts(
-        await musicContract.getAddress()
+    // Autorizar endereços no OysterVault ANTES de validar
+    const authorizeOysterTokenTx = await oysterVault.authorizeContract(
+        await oysterToken.getAddress(),
+        true
     );
-    await validateTx.wait();
-    console.log("MusicContract address validated in OysterToken contract");
+    await authorizeOysterTokenTx.wait();
+    console.log("OysterToken address authorized in OysterVault contract");
 
-    // AUTORIZAR MUSICCONTRACT NO OYSTERVAULT
     const authorizeMusicContractTx = await oysterVault.authorizeContract(
         await musicContract.getAddress(),
         true
@@ -82,13 +82,7 @@ async function main() {
     await authorizeMusicContractTx.wait();
     console.log("MusicContract address authorized in OysterVault contract");
 
-    // AUTORIZAR OYSTERTOKEN NO OYSTERVAULT - **ESSA É A PARTE IMPORTANTE**
-    const authorizeOysterTokenTx = await oysterVault.authorizeContract(
-        await oysterToken.getAddress(),
-        true
-    );
-    await authorizeOysterTokenTx.wait();
-    console.log("OysterToken address authorized in OysterVault contract");
+    // **Removida a chamada para validateMusicContracts**
 
     const deployData = {
         network: hre.network.name,

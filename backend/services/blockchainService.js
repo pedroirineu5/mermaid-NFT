@@ -75,24 +75,29 @@ async function validateMusicContract(addressMusicContract) {
     console.log("oysterTokenInstance Address (inside validateMusicContract):", oysterTokenInstance.target);
 
     console.log("Calling validateMusicContracts with address:", addressMusicContract);
-    const tx = await oysterTokenInstance.validateMusicContracts(
-        addressMusicContract
-    );
-    console.log("Transaction:", tx);
+    try {
+        const tx = await oysterTokenInstance.validateMusicContracts(
+            addressMusicContract
+        );
+        console.log("Transaction:", tx);
 
-    const receipt = await tx.wait(); // Aguarda a transação ser minerada e obtém o recibo
-    console.log("Transaction Receipt:", receipt);
+        const receipt = await tx.wait();
+        console.log("Transaction Receipt:", receipt);
 
-    // Verifica o status da transação no recibo
-    if (receipt.status === 0) {
-        console.error("Transaction Reverted:", receipt);
-        throw new Error("Transaction reverted");
+        // Verifica o status da transação no recibo
+        if (receipt.status === 0) {
+            console.error("Transaction Reverted:", receipt);
+            throw new Error("Transaction reverted");
+        }
+
+        // Se a transação não foi revertida, prosseguimos
+        console.log("Transaction Hash:", tx.hash);
+        console.log("===== validateMusicContract END =====");
+        return { hash: tx.hash, isValid: true };
+    } catch (error) {
+        console.error("Error during validateMusicContract:", error);
+        throw error;
     }
-
-    // Se a transação não foi revertida, prosseguimos
-    console.log("Transaction Hash:", tx.hash);
-    console.log("===== validateMusicContract END =====");
-    return { hash: tx.hash, isValid: true };
 }
 
 async function sealMusicContract() {

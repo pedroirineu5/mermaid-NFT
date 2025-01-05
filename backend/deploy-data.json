@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0x5dFf39f511d5D00Ba7465029638F58B2B51c7de5",
+    "address": "0x5cDd1A25A4492132f8D7be57553136283527aed4",
     "abi": [
       "constructor(address,uint256)",
       "error ECDSAInvalidSignature()",
@@ -54,13 +54,13 @@
       "function transferFrom(address,address,uint256) returns (bool)",
       "function transferOwnership(address)",
       "function validMusicContracts(address) view returns (bool)",
-      "function validateMusicContracts(address) returns (bool)",
+      "function validateMusicContracts(address)",
       "function vault() view returns (address)"
     ],
     "gweiPerToken": 50000000000000
   },
   "oysterVault": {
-    "address": "0x096fe6280D973E6b013EF870841ec2D441499915",
+    "address": "0xF0e711D26d953B69d7f6DD550189613E732770B2",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
@@ -89,7 +89,7 @@
     ]
   },
   "musicContract": {
-    "address": "0x9A1e61325a3F3BFC01942568CA9787eFC1FB3AEA",
+    "address": "0x1C4871f8EFaf33E7787cD250144f41BDCf16D1d1",
     "abi": [
       "constructor(address,address,address,uint256)",
       "error OwnableInvalidOwner(address)",
@@ -108,6 +108,7 @@
       "function approve(address,uint256) returns (bool)",
       "function assignFullRights(address) returns (bool)",
       "function divisionOfRights(address) view returns (uint256)",
+      "function getContractType() pure returns (string)",
       "function getRemainingRightsDivision() view returns (uint256)",
       "function getRightHolders() view returns (address[])",
       "function gweiPerToken() view returns (uint256)",
