@@ -5,202 +5,163 @@ const fs = require('fs');
 const provider = new ethers.JsonRpcProvider('http://127.0.0.1:7545');
 
 async function listenToEvents() {
-  try {
-    const deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
-    const oysterTokenAddress = deployData.oysterToken.address;
-    const oysterTokenABI = deployData.oysterToken.abi;
-    const oysterVaultAddress = deployData.oysterVault.address;
-    const oysterVaultABI = deployData.oysterVault.abi;
-    const musicContractAddress = deployData.musicContract.address;
-    const musicContractABI = deployData.musicContract.abi;
+    try {
+        const deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
+        const oysterTokenAddress = deployData.oysterToken.address;
+        const oysterTokenABI = deployData.oysterToken.abi;
+        const oysterVaultAddress = deployData.oysterVault.address;
+        const oysterVaultABI = deployData.oysterVault.abi;
+        const musicContractAddress = deployData.musicContract.address;
+        const musicContractABI = deployData.musicContract.abi;
 
-    const oysterTokenInstance = new ethers.Contract(
-      oysterTokenAddress,
-      oysterTokenABI,
-      provider
-    );
-    const oysterVaultInstance = new ethers.Contract(
-      oysterVaultAddress,
-      oysterVaultABI,
-      provider
-    );
-    const musicContractInstance = new ethers.Contract(
-      musicContractAddress,
-      musicContractABI,
-      provider
-    );
-
-    const connection = await connectToDatabase();
-    console.log('Database connection established successfully!');
-
-    // Listener para validatedMusicContract (OysterToken)
-    oysterTokenInstance.on(
-      'validatedMusicContract',
-      async (address, valid, event) => {
-        console.log(
-          `Event: validatedMusicContract - Address: ${address}, Valid: ${valid}`
+        const oysterTokenInstance = new ethers.Contract(
+            oysterTokenAddress,
+            oysterTokenABI,
+            provider
         );
-        const transactionHash = event.log.transactionHash;
-
-        try {
-          console.log('Executing SQL query for validatedMusicContract...');
-          const [results] = await connection.execute(
-            'INSERT INTO validated_music_contracts (contractAddress, valid, transactionHash) VALUES (?, ?, ?)',
-            [address, valid, transactionHash]
-          );
-          console.log(
-            'validatedMusicContract event data inserted into database!',
-            results
-          );
-        } catch (dbError) {
-          console.error(
-            'Error inserting validatedMusicContract event data:',
-            dbError
-          );
-        }
-      }
-    );
-
-    // Listener para WeiRefunded (OysterToken) - Movido para cá!
-    oysterTokenInstance.on('WeiRefunded', async (to, weiAmount, event) => {
-      console.log(`Event: WeiRefunded - To: ${to}, Amount: ${weiAmount}`);
-      const transactionHash = event.log.transactionHash;
-
-      try {
-        const [results] = await connection.execute(
-          'INSERT INTO refunds (to_address, gweiAmount, transactionHash) VALUES (?, ?, ?)',
-          [to, weiAmount.toString(), transactionHash] // Convertendo BigInt para String
+        const oysterVaultInstance = new ethers.Contract(
+            oysterVaultAddress,
+            oysterVaultABI,
+            provider
         );
-        console.log('WeiRefunded event data inserted into database!');
-      } catch (dbError) {
-        console.error('Error inserting WeiRefunded event data:', dbError);
-      }
-    });
-
-    // Listener para assignedRight (MusicContract)
-    musicContractInstance.on(
-      'assignedRight',
-      async (addressRight, addressThisMusicContract, percentageOfRights, event) => {
-        console.log(`Event: assignedRight - Address: ${addressRight}, Music Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`);
-        const transactionHash = event.log.transactionHash;
-
-        try {
-          const [results] = await connection.execute(
-            'INSERT INTO music_rights_assignments (addressRight, addressThisMusicContract, percentageOfRights, transactionHash) VALUES (?, ?, ?, ?)',
-            [addressRight, addressThisMusicContract, percentageOfRights, transactionHash]
-          );
-          console.log('assignedRight event data inserted into database!');
-        } catch (dbError) {
-          console.error('Error inserting assignedRight event data:', dbError);
-        }
-      }
-    );
-
-    // Listener para withdrawalRight (MusicContract)
-    musicContractInstance.on(
-      'withdrawalRight',
-      async (addressRight, addressThisMusicContract, percentageOfRights, event) => {
-        console.log(`Event: withdrawalRight - Address: ${addressRight}, Music Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`);
-        const transactionHash = event.log.transactionHash;
-
-        try {
-          const [results] = await connection.execute(
-            'INSERT INTO music_rights_withdrawals (addressRight, addressThisMusicContract, percentageOfRights, transactionHash) VALUES (?, ?, ?, ?)',
-            [addressRight, addressThisMusicContract, percentageOfRights, transactionHash]
-          );
-          console.log('withdrawalRight event data inserted into database!');
-        } catch (dbError) {
-          console.error('Error inserting withdrawalRight event data:', dbError);
-        }
-      }
-    );
-
-    // Listener para musicWithSealedRights (MusicContract)
-    musicContractInstance.on(
-      'musicWithSealedRights',
-      async (addressThisMusicContract, musicContactIsSealed, event) => {
-        console.log(`Event: musicWithSealedRights - Music Contract: ${addressThisMusicContract}, Sealed: ${musicContactIsSealed}`);
-        const transactionHash = event.log.transactionHash;
-        try {
-          const [results] = await connection.execute(
-            'INSERT INTO music_rights_sealed (addressThisMusicContract, musicContactIsSealed, transactionHash) VALUES (?, ?, ?)',
-            [addressThisMusicContract, musicContactIsSealed, transactionHash]
-          );
-          console.log('musicWithSealedRights event data inserted into database!');
-        } catch (dbError) {
-          console.error('Error inserting musicWithSealedRights event data:', dbError);
-        }
-      }
-    );
-
-    // Listener para tokenAssigned (MusicContract)
-    musicContractInstance.on('tokenAssigned', async (addressHolderToken, amountToken, event) => {
-      console.log(`Event: tokenAssigned - Address: ${addressHolderToken}, Amount: ${amountToken}`);
-      const transactionHash = event.log.transactionHash;
-
-      try {
-        const [results] = await connection.execute(
-          'INSERT INTO token_assignments (addressHolderToken, amountToken, transactionHash) VALUES (?, ?, ?)',
-          [addressHolderToken, amountToken.toString(), transactionHash] // Convertendo BigInt para String
+        const musicContractInstance = new ethers.Contract(
+            musicContractAddress,
+            musicContractABI,
+            provider
         );
-        console.log('tokenAssigned event data inserted into database!');
-      } catch (dbError) {
-        console.error('Error inserting tokenAssigned event data:', dbError);
-      }
-    });
 
-    // Listener para purchaseMade (MusicContract)
-    musicContractInstance.on('purchaseMade', async (purchaseAddress, activated, event) => {
-      console.log(`Event: purchaseMade - Address: ${purchaseAddress}, Activated: ${activated}`);
-      const transactionHash = event.log.transactionHash;
+        const connection = await connectToDatabase();
+        console.log('Database connection established successfully!');
 
-      try {
-        const [results] = await connection.execute(
-          'INSERT INTO purchases (purchaseAddress, activated, transactionHash) VALUES (?, ?, ?)',
-          [purchaseAddress, activated, transactionHash]
+        // Listener para ValidatedMusicContract (OysterToken)
+        oysterTokenInstance.on(
+            'ValidatedMusicContract',
+            async (address, valid, event) => {
+                console.log(
+                    `Event: ValidatedMusicContract - Address: ${address}, Valid: ${valid}`
+                );
+                const transactionHash = event.log.transactionHash;
+
+                try {
+                    console.log(
+                        'Executing SQL query for ValidatedMusicContract...'
+                    );
+                    const [results] = await connection.execute(
+                        'INSERT INTO validated_music_contracts (contractAddress, valid, transactionHash) VALUES (?, ?, ?)',
+                        [address, valid, transactionHash]
+                    );
+                    console.log(
+                        'ValidatedMusicContract event data inserted into database!',
+                        results
+                    );
+                } catch (dbError) {
+                    console.error(
+                        'Error inserting ValidatedMusicContract event data:',
+                        dbError
+                    );
+                }
+            }
         );
-        console.log('purchaseMade event data inserted into database!');
-      } catch (dbError) {
-        console.error('Error inserting purchaseMade event data:', dbError);
-      }
-    });
 
-    // Listener para musicHeard (MusicContract)
-    musicContractInstance.on('musicHeard', async (hearAddress, confirm, event) => {
-      console.log(`Event: musicHeard - Address: ${hearAddress}, Confirm: ${confirm}`);
-      const transactionHash = event.log.transactionHash;
+        // Listener para FullRightsAssigned (MusicContract)
+        musicContractInstance.on(
+            'FullRightsAssigned',
+            async (to, timestamp, event) => {
+                console.log(
+                    `Event: FullRightsAssigned - To: ${to}, Timestamp: ${timestamp}`
+                );
+                const transactionHash = event.log.transactionHash;
 
-      try {
-        const [results] = await connection.execute(
-          'INSERT INTO music_listens (hearAddress, confirm, transactionHash) VALUES (?, ?, ?)',
-          [hearAddress, confirm, transactionHash]
+                try {
+                    const [results] = await connection.execute(
+                        'INSERT INTO full_rights_assigned (addressTo, timestamp, transactionHash) VALUES (?, ?, ?)',
+                        [to, new Date(Number(timestamp) * 1000).toISOString(), transactionHash]
+                    );
+                    console.log(
+                        'FullRightsAssigned event data inserted into database!'
+                    );
+                } catch (dbError) {
+                    console.error(
+                        'Error inserting FullRightsAssigned event data:',
+                        dbError
+                    );
+                }
+            }
         );
-        console.log('musicHeard event data inserted into database!');
-      } catch (dbError) {
-        console.error('Error inserting musicHeard event data:', dbError);
-      }
-    });
 
-    // Listener para transferViaTokenSale (OysterToken)
-    oysterTokenInstance.on('transferViaTokenSale', async (to, weiAmount, event) => {
-      console.log(`Event: transferViaTokenSale - To: ${to}, Amount: ${weiAmount}`);
-      const transactionHash = event.log.transactionHash;
+        // Listener para SellTokens (MusicContract)
+        musicContractInstance.on(
+            'SellTokens',
+            async (caller, amount, event) => {
+                console.log(
+                    `Event: SellTokens - Caller: ${caller}, Amount: ${amount}`
+                );
+                const transactionHash = event.log.transactionHash;
 
-      try {
-        const [results] = await connection.execute(
-          'INSERT INTO token_sales (to_address, weiAmount, transactionHash) VALUES (?, ?, ?)',
-          [to, weiAmount.toString(), transactionHash] // Convertendo BigInt para String
+                try {
+                    const [results] = await connection.execute(
+                        'INSERT INTO sell_tokens (caller, amount, transactionHash) VALUES (?, ?, ?)',
+                        [caller, amount.toString(), transactionHash]
+                    );
+                    console.log('SellTokens event data inserted into database!');
+                } catch (dbError) {
+                    console.error(
+                        'Error inserting SellTokens event data:',
+                        dbError
+                    );
+                }
+            }
         );
-        console.log('transferViaTokenSale event data inserted into database!');
-      } catch (dbError) {
-        console.error('Error inserting transferViaTokenSale event data:', dbError);
-      }
-    });
 
-    console.log('Listening for events on Ganache...');
-  } catch (error) {
-    console.error('Error setting up event listeners:', error);
-  }
+        // Listener para TokensPurchased (MusicContract)
+        musicContractInstance.on(
+            'TokensPurchased',
+            async (buyer, amount, event) => {
+                console.log(
+                    `Event: TokensPurchased - Buyer: ${buyer}, Amount: ${amount}`
+                );
+                const transactionHash = event.log.transactionHash;
+
+                try {
+                    const [results] = await connection.execute(
+                        'INSERT INTO tokens_purchased (buyer, amount, transactionHash) VALUES (?, ?, ?)',
+                        [buyer, amount.toString(), transactionHash]
+                    );
+                    console.log(
+                        'TokensPurchased event data inserted into database!'
+                    );
+                } catch (dbError) {
+                    console.error(
+                        'Error inserting TokensPurchased event data:',
+                        dbError
+                    );
+                }
+            }
+        );
+
+        // Listener para RightsSealed (MusicContract)
+        musicContractInstance.on('RightsSealed', async (caller, event) => {
+            console.log(`Event: RightsSealed - Caller: ${caller}`);
+            const transactionHash = event.log.transactionHash;
+
+            try {
+                const [results] = await connection.execute(
+                    'INSERT INTO rights_sealed (caller, transactionHash) VALUES (?, ?)',
+                    [caller, transactionHash]
+                );
+                console.log('RightsSealed event data inserted into database!');
+            } catch (dbError) {
+                console.error(
+                    'Error inserting RightsSealed event data:',
+                    dbError
+                );
+            }
+        });
+
+        console.log('Listening for events on Ganache...');
+    } catch (error) {
+        console.error('Error setting up event listeners:', error);
+    }
 }
 
 module.exports = { listenToEvents };

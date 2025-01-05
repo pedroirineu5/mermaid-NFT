@@ -17,22 +17,38 @@ contract OysterVault is Ownable {
     event Log(string message);
     event LogAddress(string message, address addr);
     event LogUint(string message, uint256 value);
+    event LogAddressUint(string message, address addr, uint256 value);
 
     modifier onlyOysterToken() {
-        require(msg.sender == address(oysterToken) || owner() == msg.sender, "This function can only be called by the oysterToken address or owner");
+        require(
+            msg.sender == address(oysterToken) || owner() == msg.sender,
+            "This function can only be called by the oysterToken address or owner"
+        );
         _;
     }
 
     modifier onlyAuthorizedContracts() {
-        require(authorizedContracts[msg.sender], "Unauthorized contract");
+        emit LogAddress("onlyAuthorizedContracts called by", msg.sender);
+        require(
+            authorizedContracts[msg.sender],
+            "Unauthorized contract"
+        );
         _;
     }
 
-    constructor(IERC20 _oysterToken, address initialOwner) Ownable(initialOwner) {
+    constructor(
+        IERC20 _oysterToken,
+        address initialOwner
+    )
+        Ownable(initialOwner)
+    {
         oysterToken = _oysterToken;
     }
 
-    function sendToken(address _to, uint256 amount) external onlyOwner returns (bool) {
+    function sendToken(
+        address _to,
+        uint256 amount
+    ) external onlyAuthorizedContracts returns (bool) {
         emit Log("OysterVault: sendToken called");
         emit LogAddress("by", msg.sender);
         emit LogAddress("to", _to);
@@ -43,8 +59,8 @@ contract OysterVault is Ownable {
             oysterToken.balanceOf(address(this)) >= amount,
             "Vault does not have enough tokens"
         );
-         require(
-            oysterToken.transfer( _to, amount),
+        require(
+            oysterToken.transfer(_to, amount),
             "Token transfer failed"
         );
 
@@ -53,13 +69,23 @@ contract OysterVault is Ownable {
         return true;
     }
 
-   function receiveTokens(address holder, uint256 amount) external onlyAuthorizedContracts returns (bool) {
+    function receiveTokens(
+        address holder,
+        uint256 amount
+    ) external onlyAuthorizedContracts returns (bool) {
         emit Log("OysterVault: receiveTokens called");
         emit LogAddress("by", msg.sender);
         emit LogAddress("holder", holder);
         emit LogUint("amount", amount);
-        emit ReceiveTokens(holder, amount);
-        require(oysterToken.transferFrom(holder, address(this), amount), "Token transfer failed");
+        emit LogAddressUint(
+            "OysterVault: Balance of holder before transfer",
+            holder,
+            oysterToken.balanceOf(holder)
+        );
+        require(
+            oysterToken.transferFrom(holder, address(this), amount),
+            "Token transfer failed"
+        );
         emit TokensRecieved(holder, amount);
         emit Log("OysterVault: TokensRecieved event emitted");
         return true;
@@ -69,7 +95,11 @@ contract OysterVault is Ownable {
         return oysterToken.balanceOf(address(this));
     }
 
-    function authorizeContract(address contractAddress, bool authorize) external onlyOwner {
+    function authorizeContract(
+        address contractAddress,
+        bool authorize
+    ) external onlyOwner {
+        emit LogAddress("OysterVault: Authorizing contract", contractAddress);
         authorizedContracts[contractAddress] = authorize;
         emit ContractAuthorized(contractAddress, authorize);
     }

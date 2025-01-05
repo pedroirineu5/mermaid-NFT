@@ -60,11 +60,18 @@ async function startApp() {
         });
 
         app.post('/buy-tokens', async (req, res) => {
-            const { weiValue } = req.body;
+            const { amount } = req.body; // Agora recebe a quantidade de tokens
             try {
-                const transactionHash = await blockchainService.buyTokens(weiValue);
+                // Obter o endereço do comprador do cabeçalho da requisição ou do corpo da requisição
+                const buyerAddress = req.headers['x-buyer-address'] || req.body.buyerAddress; 
+
+                if (!buyerAddress) {
+                    return res.status(400).send({ error: 'Buyer address is required.' });
+                }
+
+                const transactionHash = await blockchainService.buyTokens(buyerAddress, amount);
                 res.send(
-                    `Tokens purchased! Transaction hash: ${transactionHash}`
+                    `${amount} tokens purchased by ${buyerAddress}! Transaction hash: ${transactionHash}`
                 );
             } catch (error) {
                 console.error(error);
@@ -72,7 +79,7 @@ async function startApp() {
             }
         });
 
-       app.post('/sell-tokens', async (req, res) => {
+        app.post('/sell-tokens', async (req, res) => {
             const { amount } = req.body;
             try {
                 const transactionHash = await blockchainService.sellOysterTokens(
@@ -86,7 +93,6 @@ async function startApp() {
                 res.status(500).send(`Error selling tokens: ${error.message}`);
             }
         });
-
 
         app.get('/remaining-rights', async (req, res) => {
             try {
@@ -118,7 +124,6 @@ async function startApp() {
                 res.status(500).send(`Error checking if contract is sealed: ${error.message}`);
             }
         });
-
 
         app.listen(port, () => {
             console.log(`Mermaid backend listening at http://localhost:${port}`);

@@ -16,6 +16,10 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
     event SetVault(address indexed vault);
     event MintToVault(address indexed vault, uint256 amount);
     event BuyTokens(address indexed buyer, uint256 amount);
+    event Log(string message);
+    event LogAddress(string message, address addr);
+    event LogUint(string message, uint256 value);
+    event LogAddressUint(string message, address addr, uint256 value);
 
     constructor(address initialOwner, uint256 _gweiPerToken)
         ERC20("OysterToken", "OST")
@@ -42,21 +46,57 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         _mint(to, amount);
     }
 
-    function validateMusicContracts(address addressMusicContract) external onlyOwner returns (bool) {
+    function validateMusicContracts(
+        address addressMusicContract
+    ) external onlyOwner returns (bool) {
         emit ValidatedMusicContract(addressMusicContract, true);
         validMusicContracts[addressMusicContract] = true;
         return true;
     }
 
-    function buyTokens(address musicContractAddress, uint256 amount) external payable {
-        require(validMusicContracts[musicContractAddress], "Invalid MusicContract address");
+    function buyTokens(
+        address musicContractAddress,
+        uint256 amount
+    ) external payable {
+        emit Log("OysterToken: buyTokens called");
+        emit LogAddress("by", msg.sender);
+        emit LogAddress("for MusicContract", musicContractAddress);
+        emit LogUint("amount", amount);
+        require(
+            validMusicContracts[musicContractAddress],
+            "Invalid MusicContract address"
+        );
         // Calcula o valor em wei baseado na quantidade de tokens
         uint256 weiAmount = amount * gweiPerToken;
         // Verifica se o remetente tem saldo suficiente em wei
         require(msg.value >= weiAmount, "Insufficient Wei sent");
-        require(vault.viewTokensVault() >= amount, "Insufficient tokens in vault");
+        require(
+            vault.viewTokensVault() >= amount,
+            "Insufficient tokens in vault"
+        );
+
+        emit LogAddressUint(
+            "OysterToken: Balance of MusicContract before purchase",
+            musicContractAddress,
+            IERC20(this).balanceOf(musicContractAddress)
+        );
+        emit LogAddressUint(
+            "OysterToken: Balance of Vault before purchase",
+            address(vault),
+            vault.viewTokensVault()
+        );
+
+        // Transferir tokens do cofre para o MusicContract
+        vault.sendToken(musicContractAddress, amount);
+
         // Chama a função purchaseTokens do MusicContract
         MusicContract(musicContractAddress).purchaseTokens(msg.sender, amount);
+
+        emit LogAddressUint(
+            "OysterToken: Balance of MusicContract after purchase",
+            musicContractAddress,
+            IERC20(this).balanceOf(musicContractAddress)
+        );
 
         // Reembolsa o remetente se ele enviou mais wei do que o necessário
         if (msg.value > weiAmount) {

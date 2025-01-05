@@ -76,31 +76,32 @@ async function assignFullMusicRights(addressRight) {
     return result.hash;
 }
 
-
-async function buyTokens(weiValue) {
-  if (!oysterTokenInstance) {
-    throw new Error('OysterToken contract not initialized.');
-  }
-
-  const result = await oysterTokenInstance.buyTokens(musicContractInstance.target, {
-      value: weiValue,
-      gasLimit: 300000
-  });
-
-  await result.wait();
-  return result.hash;
-}
-
-async function sellOysterTokens(amount) {
+async function buyTokens(buyerAddress, amount) {
     if (!oysterTokenInstance) {
         throw new Error('OysterToken contract not initialized.');
     }
+
+    // Obter o valor em Wei a ser enviado (quantidade de tokens * gwei por token)
+    const gweiPerToken = BigInt(process.env.GWEI_PER_TOKEN);
+    const weiValue = BigInt(amount) * gweiPerToken;
+
+    // Chamar a função buyTokens do contrato OysterToken, enviando o valor em Wei
+    const result = await oysterTokenInstance.connect(wallet).buyTokens(musicContractInstance.target, amount, {
+        value: weiValue,
+        gasLimit: 300000
+    });
+
+    await result.wait();
+    return result.hash;
+}
+
+async function sellOysterTokens(amount) {
     if (!musicContractInstance) {
         throw new Error('Music contract not initialized.');
     }
     try {
-      const result = await musicContractInstance.sellTokens(
-          BigInt(amount)
+        const result = await musicContractInstance.connect(wallet).sellTokens(
+            BigInt(amount)
         );
 
         await result.wait();
@@ -136,7 +137,7 @@ async function getTokensPerAddress(address) {
 }
 
 async function getSignerAddress() {
-  return wallet.getAddress();
+    return wallet.getAddress();
 }
 
 module.exports = {

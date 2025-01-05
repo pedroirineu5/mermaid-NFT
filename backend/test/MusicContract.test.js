@@ -14,17 +14,18 @@ describe("MusicContract", function () {
     const initialSupply = ethers.parseUnits("1000000", 18);
     const gweiPerToken = 50000 * 1e9;
     const initialTransferToMusicContract = ethers.parseUnits("100", 18);
+    let oysterTokenAddress, oysterVaultAddress, musicContractAddress;
 
     beforeEach(async function () {
         [owner, buyer, seller] = await ethers.getSigners();
 
         OysterToken = await ethers.getContractFactory("OysterToken");
         oysterToken = await OysterToken.deploy(owner.address, gweiPerToken);
-        const oysterTokenAddress = await oysterToken.getAddress();
+        oysterTokenAddress = await oysterToken.getAddress();
 
         OysterVault = await ethers.getContractFactory("OysterVault");
         oysterVault = await OysterVault.deploy(oysterTokenAddress, owner.address);
-        const oysterVaultAddress = await oysterVault.getAddress();
+        oysterVaultAddress = await oysterVault.getAddress();
 
         await oysterToken.setVault(oysterVaultAddress);
         await oysterToken.mintToVault(initialSupply);
@@ -36,10 +37,11 @@ describe("MusicContract", function () {
             oysterVaultAddress,
             gweiPerToken
         );
-        const musicContractAddress = await musicContract.getAddress();
+        musicContractAddress = await musicContract.getAddress();
 
         await oysterToken.validateMusicContracts(musicContractAddress);
         await oysterVault.connect(owner).authorizeContract(musicContractAddress, true);
+        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
 
         // Aprovar OysterVault para transferir tokens de volta do MusicContract
         await oysterToken.connect(owner).approve(oysterVaultAddress, ethers.MaxUint256);
@@ -59,86 +61,71 @@ describe("MusicContract", function () {
     });
 
     it("Should allow buying tokens", async function () {
-        // Comprar tokens, por exemplo, 20
+        // Autorizar o OysterToken dentro deste teste específico
+        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
+
         const amount = 20n;
-
         const receipt = await this.buyTokens(buyer, amount);
-
-        const events = await musicContract.queryFilter(
-            musicContract.filters.TokensPurchased,
-            receipt.blockNumber,
-            receipt.blockNumber
-        );
-
+        const events = await musicContract.queryFilter(musicContract.filters.TokensPurchased, receipt.blockNumber, receipt.blockNumber);
         const tokensPurchasedEvent = events[0];
 
         expect(tokensPurchasedEvent).to.not.be.undefined;
         expect(tokensPurchasedEvent.args.buyer).to.equal(buyer.address);
         expect(tokensPurchasedEvent.args.amount).to.equal(amount);
-        expect(await musicContract.viewTokensPerAddress(buyer.address)).to.equal(
-            amount
-        );
+        expect(await musicContract.viewTokensPerAddress(buyer.address)).to.equal(amount);
     });
 
     it("Should allow selling tokens", async function () {
-        // Comprar tokens, por exemplo, 20
+        // Autorizar o OysterToken dentro deste teste específico
+        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
+
         const amount = 20n;
         await this.buyTokens(buyer, amount);
 
-        // Vender metade dos tokens, por exemplo, 10
         const sellAmount = 10n;
-        const initialSellerBalance = await ethers.provider.getBalance(
-            buyer.address
-        );
+        const initialSellerBalance = await ethers.provider.getBalance(buyer.address);
 
-        // Aprovar o OysterVault para transferir tokens do MusicContract ANTES de chamar sellTokens
+        const allowanceBefore = await oysterToken.allowance(musicContract.getAddress(), oysterVault.getAddress());
+        console.log("Allowance before sellTokens:", allowanceBefore.toString());
         await musicContract.connect(buyer).approve(oysterVault.getAddress(), amount);
+        const allowanceAfter = await oysterToken.allowance(musicContract.getAddress(), oysterVault.getAddress());
+        console.log("Allowance after sellTokens:", allowanceAfter.toString());
+
+        expect(allowanceAfter).to.be.greaterThanOrEqual(sellAmount);
+
+        console.log("MusicContract balance before selling:", (await oysterToken.balanceOf(musicContract.getAddress())).toString());
 
         const tx = await musicContract.connect(buyer).sellTokens(sellAmount);
         const receipt = await tx.wait();
 
-        const events = await musicContract.queryFilter(
-            musicContract.filters.SellTokens,
-            receipt.blockNumber,
-            receipt.blockNumber
-        );
+        const events = await musicContract.queryFilter(musicContract.filters.SellTokens, receipt.blockNumber, receipt.blockNumber);
 
         const sellTokensEvent = events[0];
         expect(sellTokensEvent).to.not.be.undefined;
         expect(sellTokensEvent.args.caller).to.equal(buyer.address);
         expect(sellTokensEvent.args.amount).to.equal(sellAmount);
 
-        const finalSellerBalance = await ethers.provider.getBalance(
-            buyer.address
-        );
+        const finalSellerBalance = await ethers.provider.getBalance(buyer.address);
 
         expect(finalSellerBalance).to.be.greaterThan(initialSellerBalance);
-        expect(
-            await musicContract.viewTokensPerAddress(buyer.address)
-        ).to.equal(amount - sellAmount);
+        expect(await musicContract.viewTokensPerAddress(buyer.address)).to.equal(amount - sellAmount);
     });
 
     it("Should revert if selling zero tokens", async function () {
-        // Comprar tokens, por exemplo, 20
+        // Autorizar o OysterToken dentro deste teste específico
+        await oysterVault.connect(owner).authorizeContract(oysterTokenAddress, true);
+
         const amount = 20n;
         await this.buyTokens(buyer, amount);
 
-        await expect(
-            musicContract.connect(buyer).sellTokens(0)
-        ).to.be.revertedWith("Amount must be greater than zero");
+        await expect(musicContract.connect(buyer).sellTokens(0)).to.be.revertedWith("Amount must be greater than zero");
     });
 
     it("Should allow assigning full rights", async function () {
-        const tx = await musicContract
-            .connect(owner)
-            .assignFullRights(buyer.address);
+        const tx = await musicContract.connect(owner).assignFullRights(buyer.address);
         const receipt = await tx.wait();
 
-        const events = await musicContract.queryFilter(
-            musicContract.filters.FullRightsAssigned,
-            receipt.blockNumber,
-            receipt.blockNumber
-        );
+        const events = await musicContract.queryFilter(musicContract.filters.FullRightsAssigned, receipt.blockNumber, receipt.blockNumber);
         const fullRightsAssignedEvent = events[0];
 
         console.log("FullRightsAssigned Event:", fullRightsAssignedEvent);
@@ -153,18 +140,12 @@ describe("MusicContract", function () {
     it("Should revert if the contract is already sealed", async function () {
         await musicContract.connect(owner).assignFullRights(buyer.address);
         await musicContract.connect(owner).sealRights();
-        await expect(
-            musicContract.connect(owner).assignFullRights(buyer.address)
-        ).to.be.revertedWith(
-            "The contract is already sealed, no modification of rights can be made"
-        );
+        await expect(musicContract.connect(owner).assignFullRights(buyer.address)).to.be.revertedWith("The contract is already sealed, no modification of rights can be made");
     });
 
     it("Should revert if there are no remaining rights", async function () {
         await musicContract.connect(owner).assignFullRights(buyer.address);
-        await expect(
-            musicContract.connect(owner).assignFullRights(seller.address)
-        ).to.be.revertedWith("There are no rights left to assign");
+        await expect(musicContract.connect(owner).assignFullRights(seller.address)).to.be.revertedWith("There are no rights left to assign");
     });
 
     it("Should allow sealing rights", async function () {
@@ -172,11 +153,7 @@ describe("MusicContract", function () {
         const tx = await musicContract.connect(owner).sealRights();
         const receipt = await tx.wait();
 
-        const events = await musicContract.queryFilter(
-            musicContract.filters.RightsSealed,
-            receipt.blockNumber,
-            receipt.blockNumber
-        );
+        const events = await musicContract.queryFilter(musicContract.filters.RightsSealed, receipt.blockNumber, receipt.blockNumber);
 
         const rightsSealedEvent = events[0];
 
@@ -189,19 +166,13 @@ describe("MusicContract", function () {
     });
 
     it("Should revert if there are rights left", async function () {
-        await expect(
-            musicContract.connect(owner).sealRights()
-        ).to.be.revertedWith(
-            "The contract cannot be sealed until all rights have been assigned"
-        );
+        await expect(musicContract.connect(owner).sealRights()).to.be.revertedWith("The contract cannot be sealed until all rights have been assigned");
     });
 
     it("Should revert if the contract is already sealed", async function () {
         await musicContract.connect(owner).assignFullRights(buyer.address);
         await musicContract.connect(owner).sealRights();
 
-        await expect(
-            musicContract.connect(owner).sealRights()
-        ).to.be.revertedWith("The contract is already sealed");
+        await expect(musicContract.connect(owner).sealRights()).to.be.revertedWith("The contract is already sealed");
     });
 });

@@ -22,26 +22,44 @@ contract MusicContract is Ownable {
     event SellTokens(address indexed caller, uint256 amount);
     event TokensPurchased(address indexed buyer, uint256 amount);
     event RightsSealed(address indexed caller);
-
     event Log(string message);
     event LogAddress(string message, address addr);
     event LogUint(string message, uint256 value);
+    event LogUintUint(string message, uint256 value1, uint256 value2);
+    event LogAddressUint(string message, address addr, uint256 value);
+    event LogAddressAddressUint(
+        string message,
+        address addr1,
+        address addr2,
+        uint256 value
+    );
 
-    constructor(IERC20 _oysterToken, address initialOwner, OysterVault _vault, uint256 _gweiPerToken) Ownable(initialOwner) {
+    constructor(
+        IERC20 _oysterToken,
+        address initialOwner,
+        OysterVault _vault,
+        uint256 _gweiPerToken
+    )
+        Ownable(initialOwner)
+    {
         oysterToken = _oysterToken;
         vault = _vault;
         remainingRights = 100;
         musicContactIsSealed = false;
         gweiPerToken = _gweiPerToken;
-        // Aprovar o próprio contrato a gastar os seus tokens
-        oysterToken.approve(address(this), type(uint).max);
     }
 
     function sealRights() external onlyOwner returns (bool) {
         emit Log("MusicContract: sealRights called");
         emit LogAddress("by", msg.sender);
-        require(remainingRights == 0, "The contract cannot be sealed until all rights have been assigned");
-        require(!musicContactIsSealed, "The contract is already sealed");
+        require(
+            remainingRights == 0,
+            "The contract cannot be sealed until all rights have been assigned"
+        );
+        require(
+            !musicContactIsSealed,
+            "The contract is already sealed"
+        );
         musicContactIsSealed = true;
         emit RightsSealed(msg.sender);
         emit Log("MusicContract: RightsSealed event emitted");
@@ -52,8 +70,14 @@ contract MusicContract is Ownable {
         emit Log("MusicContract: assignFullRights called");
         emit LogAddress("by", msg.sender);
         emit LogAddress("to", _to);
-        require(!musicContactIsSealed, "The contract is already sealed, no modification of rights can be made");
-        require(remainingRights > 0, "There are no rights left to assign");
+        require(
+            !musicContactIsSealed,
+            "The contract is already sealed, no modification of rights can be made"
+        );
+        require(
+            remainingRights > 0,
+            "There are no rights left to assign"
+        );
         rightAssigned[_to] = 100;
         remainingRights = 0;
         rightHolders.push(_to);
@@ -74,7 +98,7 @@ contract MusicContract is Ownable {
         return rightAssigned[_of];
     }
 
-    function viewTokensPerAddress(address _of) external view returns (uint256){
+    function viewTokensPerAddress(address _of) external view returns (uint256) {
         return tokensPerAddress[_of];
     }
 
@@ -87,11 +111,30 @@ contract MusicContract is Ownable {
         emit LogAddress("by", msg.sender);
         emit LogAddress("for buyer", buyer);
         emit LogUint("amount", amount);
-        require(msg.sender == address(oysterToken), "Only OysterToken can call this function");
+        require(
+            msg.sender == address(oysterToken),
+            "Only OysterToken can call this function"
+        );
+        emit LogAddressUint(
+            "MusicContract: Balance of MusicContract before purchase",
+            address(this),
+            oysterToken.balanceOf(address(this))
+        );
         // Aprova o vault a gastar tokens do MusicContract
-        require(oysterToken.approve(address(vault), amount), "Approval failed");
+        require(
+            oysterToken.approve(address(vault), amount),
+            "Approval failed"
+        );
         // Adiciona chamada do vault para receber os tokens
-        require(vault.receiveTokens(address(this), amount), "Token transfer failed");
+        require(
+            vault.receiveTokens(address(this), amount),
+            "Token transfer failed"
+        );
+        emit LogAddressUint(
+            "MusicContract: Balance of MusicContract after purchase",
+            address(this),
+            oysterToken.balanceOf(address(this))
+        );
         tokensPerAddress[buyer] += amount;
         emit TokensPurchased(buyer, amount);
         emit Log("MusicContract: TokensPurchased event emitted");
@@ -102,23 +145,60 @@ contract MusicContract is Ownable {
         emit LogAddress("by", msg.sender);
         emit LogUint("amount", amount);
         require(amount > 0, "Amount must be greater than zero");
-        require(tokensPerAddress[msg.sender] >= amount, "Insufficient token balance");
-        emit Log("MusicContract: Approving vault to spend tokens");
+        require(
+            tokensPerAddress[msg.sender] >= amount,
+            "Insufficient token balance"
+        );
+
+        emit LogUintUint(
+            "MusicContract: User tokens before and after",
+            tokensPerAddress[msg.sender],
+            tokensPerAddress[msg.sender] - amount
+        );
+
+        emit LogAddressUint(
+            "MusicContract: Balance of MusicContract before selling",
+            address(this),
+            oysterToken.balanceOf(address(this))
+        );
+
         // Aprova o vault a gastar a quantidade correta de tokens do MusicContract
-        // Vai ser aprovado no teste
-        // require(oysterToken.approve(address(vault), amount), "Approval failed");
-        emit Log("MusicContract: Approved vault to spend tokens");
+        emit LogAddressAddressUint(
+            "MusicContract: Approving vault to spend tokens",
+            address(this),
+            address(vault),
+            amount
+        );
+        require(
+            oysterToken.approve(address(vault), amount),
+            "Approval failed"
+        );
+        emit LogAddressUint(
+            "MusicContract: Allowance for vault",
+            address(vault),
+            oysterToken.allowance(address(this), address(vault))
+        );
+
         tokensPerAddress[msg.sender] -= amount;
-        emit LogUint("MusicContract: Tokens remaining for user", tokensPerAddress[msg.sender]);
+        emit LogUint(
+            "MusicContract: Tokens remaining for user",
+            tokensPerAddress[msg.sender]
+        );
 
         // Em vez de transferir diretamente, chamar receiveTokens do vault
         emit Log("MusicContract: Calling receiveTokens on vault");
-        require(vault.receiveTokens(address(this), amount), "Token transfer failed");
+        require(
+            vault.receiveTokens(address(this), amount),
+            "Token transfer failed"
+        );
         emit Log("MusicContract: receiveTokens called on vault");
 
         // Calcula o valor em Wei a ser transferido para o vendedor
         uint256 amountToTransfer = amount * gweiPerToken;
-        emit LogUint("MusicContract: Amount to transfer in Wei", amountToTransfer);
+        emit LogUint(
+            "MusicContract: Amount to transfer in Wei",
+            amountToTransfer
+        );
         emit Log("MusicContract: Transferring Wei to seller");
         // Transfere o valor em Wei para o vendedor
         payable(msg.sender).transfer(amountToTransfer);
