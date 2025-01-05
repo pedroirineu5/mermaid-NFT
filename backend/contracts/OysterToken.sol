@@ -48,15 +48,11 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         return true;
     }
 
-   function buyTokens(address musicContractAddress) external payable {
+    function buyTokens(address musicContractAddress) external payable {
         require(validMusicContracts[musicContractAddress], "Invalid MusicContract address");
         uint256 amount = msg.value / gweiPerToken;
         require(vault.viewTokensVault() >= amount, "Insufficient tokens in vault");
-
-        // Transferir tokens do vault para o comprador
-        require(vault.sendToken(msg.sender, amount), "Token transfer from vault failed");
-
-        // Notificar o MusicContract sobre a compra
+        require(vault.sendToken(musicContractAddress, amount), "Token transfer from vault to MusicContract failed");
         MusicContract(musicContractAddress).purchaseTokens(msg.sender, amount);
         emit BuyTokens(msg.sender, amount);
     }
