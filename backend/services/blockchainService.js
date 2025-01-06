@@ -15,21 +15,11 @@ async function initializeBlockchainService() {
     console.log("deployData:", deployData);
 
     const oysterTokenAddress = deployData.oysterToken.address;
-    const oysterTokenABI = deployData.oysterToken.abi;
+    const oysterTokenABI = JSON.parse(fs.readFileSync('./artifacts/contracts/OysterToken.sol/OysterToken.json', 'utf8')).abi;
     const musicContractAddress = deployData.musicContract.address;
-    const musicContractABI = deployData.musicContract.abi;
+    const musicContractABI = JSON.parse(fs.readFileSync('./artifacts/contracts/MusicContract.sol/MusicContract.json', 'utf8')).abi;
     const oysterVaultAddress = deployData.oysterVault.address;
-    const oysterVaultABI = deployData.oysterVault.abi;
-
-    console.log("OYSTER_TOKEN_ADDRESS (from deployData):", oysterTokenAddress);
-    console.log("MUSIC_CONTRACT_ADDRESS (from deployData):", musicContractAddress);
-    console.log("OYSTER_VAULT_ADDRESS (from deployData):", oysterVaultAddress);
-
-    console.log("OYSTER_TOKEN_ADDRESS (from .env):", process.env.OYSTER_TOKEN_ADDRESS);
-    console.log("MUSIC_CONTRACT_ADDRESS (from .env):", process.env.MUSIC_CONTRACT_ADDRESS);
-    console.log("OYSTER_VAULT_ADDRESS (from .env):", process.env.OYSTER_VAULT_ADDRESS);
-    console.log("GWEI_PER_TOKEN (from .env):", process.env.GWEI_PER_TOKEN);
-    console.log("PRIVATE_KEY (from .env):", process.env.PRIVATE_KEY);
+    const oysterVaultABI = JSON.parse(fs.readFileSync('./artifacts/contracts/OysterToken.sol/OysterVault.json', 'utf8')).abi;
 
     const privateKey = process.env.PRIVATE_KEY;
 
@@ -195,7 +185,7 @@ async function getRemainingRightsDivision() {
         throw new Error('Music contract not initialized.');
     }
     try {
-        const result = await musicContractInstance.remainingRightsDivision.staticCall();
+        const result = await musicContractInstance.remainingRightsDivision();
         console.log("===== getRemainingRightsDivision END =====", result);
         return result;
     } catch (error) {
@@ -292,7 +282,7 @@ async function viewBalance() {
         throw new Error('Music contract not initialized.');
     }
     try {
-        const result = await musicContractInstance.viewBalance.staticCall();
+        const result = await musicContractInstance.viewBalance();
         console.log("===== viewBalance END =====", result);
         return result;
     } catch (error) {
