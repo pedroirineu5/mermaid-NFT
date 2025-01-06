@@ -2,8 +2,7 @@ const { ethers } = require('ethers');
 const { connectToDatabase } = require('./db');
 const fs = require('fs');
 
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:7545');
-
+const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_PROVIDER_URL);
 async function listenToEvents() {
     try {
         const deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
