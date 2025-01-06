@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
-const { updateEnvFile } = require("./updateEnv"); // Importando a função
+const { updateEnvFile } = require("./updateEnv");
 
 async function isGanacheRunning() {
     try {
@@ -24,10 +24,8 @@ async function main() {
         process.exit(1);
     }
 
-    const gweiPerToken = 50000 * 1e9;
-
     const OysterToken = await hre.ethers.getContractFactory("OysterToken");
-    const oysterToken = await OysterToken.deploy(deployer.address, gweiPerToken);
+    const oysterToken = await OysterToken.deploy(deployer.address);
     await oysterToken.waitForDeployment();
     console.log("OysterToken deployed to:", await oysterToken.getAddress());
 
@@ -57,39 +55,28 @@ async function main() {
         `OysterVault balance after minting: ${vaultBalance.toString()}`
     );
 
+    const rightPurchaseValueInGwei = 1000;
+    const valueForListeningInGwei = 100;
+
     const MusicContract = await hre.ethers.getContractFactory("MusicContract");
     const musicContract = await MusicContract.deploy(
         await oysterToken.getAddress(),
-        deployer.address,
         await oysterVault.getAddress(),
-        gweiPerToken
+        rightPurchaseValueInGwei,
+        valueForListeningInGwei
     );
     await musicContract.waitForDeployment();
     console.log("MusicContract deployed to:", await musicContract.getAddress());
 
-    // Autorizar endereços no OysterVault ANTES de validar
-    const authorizeOysterTokenTx = await oysterVault.authorizeContract(
-        await oysterToken.getAddress(),
-        true
-    );
-    await authorizeOysterTokenTx.wait();
-    console.log("OysterToken address authorized in OysterVault contract");
-
-    const authorizeMusicContractTx = await oysterVault.authorizeContract(
-        await musicContract.getAddress(),
-        true
-    );
-    await authorizeMusicContractTx.wait();
-    console.log("MusicContract address authorized in OysterVault contract");
-
-    // Removida a chamada para validateMusicContracts
+    const validateMusicContractTx = await oysterToken.validateMusicContracts(await musicContract.getAddress());
+    await validateMusicContractTx.wait();
+    console.log("MusicContract address validated in OysterToken contract");
 
     const deployData = {
         network: hre.network.name,
         oysterToken: {
             address: await oysterToken.getAddress(),
             abi: oysterToken.interface.format("json"),
-            gweiPerToken: gweiPerToken,
         },
         oysterVault: {
             address: await oysterVault.getAddress(),
@@ -99,6 +86,8 @@ async function main() {
             address: await musicContract.getAddress(),
             abi: musicContract.interface.format("json"),
         },
+        rightPurchaseValueInGwei: rightPurchaseValueInGwei,
+        valueForListeningInGwei: valueForListeningInGwei
     };
 
     fs.writeFileSync(
@@ -107,7 +96,6 @@ async function main() {
     );
     console.log("Deployment data saved to deploy-data.json");
 
-    // Chamando a função para atualizar o .env
     await updateEnvFile(deployData);
     console.log(".env file updated by deploy script");
 }

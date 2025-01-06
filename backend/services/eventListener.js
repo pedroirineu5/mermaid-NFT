@@ -35,126 +35,147 @@ async function listenToEvents() {
 
         // Listener para ValidatedMusicContract (OysterToken)
         oysterTokenInstance.on(
-            'ValidatedMusicContract',
+            'validatedMusicContract',
             async (address, valid, event) => {
                 console.log(
-                    `Event: ValidatedMusicContract - Address: ${address}, Valid: ${valid}`
+                    `Event: validatedMusicContract - Address: ${address}, Valid: ${valid}`
                 );
                 const transactionHash = event.log.transactionHash;
 
                 try {
                     console.log(
-                        'Executing SQL query for ValidatedMusicContract...'
+                        'Executing SQL query for validatedMusicContract...'
                     );
                     const [results] = await connection.execute(
                         'INSERT INTO validated_music_contracts (contractAddress, valid, transactionHash) VALUES (?, ?, ?)',
                         [address, valid, transactionHash]
                     );
                     console.log(
-                        'ValidatedMusicContract event data inserted into database!',
+                        'validatedMusicContract event data inserted into database!',
                         results
                     );
                 } catch (dbError) {
                     console.error(
-                        'Error inserting ValidatedMusicContract event data:',
+                        'Error inserting validatedMusicContract event data:',
                         dbError
                     );
                 }
             }
         );
 
-        // Listener para FullRightsAssigned (MusicContract)
+        // Listener para assignedRight (MusicContract)
         musicContractInstance.on(
-            'FullRightsAssigned',
-            async (to, timestamp, event) => {
+            'assignedRight',
+            async (addressRight, addressThisMusicContract, percentageOfRights, event) => {
                 console.log(
-                    `Event: FullRightsAssigned - To: ${to}, Timestamp: ${timestamp}`
+                    `Event: assignedRight - Address: ${addressRight}, Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`
                 );
                 const transactionHash = event.log.transactionHash;
 
                 try {
                     const [results] = await connection.execute(
-                        'INSERT INTO full_rights_assigned (addressTo, timestamp, transactionHash) VALUES (?, ?, ?)',
-                        [to, new Date(Number(timestamp) * 1000).toISOString(), transactionHash]
+                        'INSERT INTO assigned_rights (addressRight, addressThisMusicContract, percentageOfRights, transactionHash) VALUES (?, ?, ?, ?)',
+                        [addressRight, addressThisMusicContract, percentageOfRights, transactionHash]
                     );
                     console.log(
-                        'FullRightsAssigned event data inserted into database!'
+                        'assignedRight event data inserted into database!'
                     );
                 } catch (dbError) {
                     console.error(
-                        'Error inserting FullRightsAssigned event data:',
+                        'Error inserting assignedRight event data:',
                         dbError
                     );
                 }
             }
         );
 
-        // Listener para SellTokens (MusicContract)
+        // Listener para withdrawalRight (MusicContract)
         musicContractInstance.on(
-            'SellTokens',
-            async (caller, amount, event) => {
+            'withdrawalRight',
+            async (addressRight, addressThisMusicContract, percentageOfRights, event) => {
                 console.log(
-                    `Event: SellTokens - Caller: ${caller}, Amount: ${amount}`
+                    `Event: withdrawalRight - Address: ${addressRight}, Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`
                 );
                 const transactionHash = event.log.transactionHash;
 
                 try {
                     const [results] = await connection.execute(
-                        'INSERT INTO sell_tokens (caller, amount, transactionHash) VALUES (?, ?, ?)',
-                        [caller, amount.toString(), transactionHash]
-                    );
-                    console.log('SellTokens event data inserted into database!');
-                } catch (dbError) {
-                    console.error(
-                        'Error inserting SellTokens event data:',
-                        dbError
-                    );
-                }
-            }
-        );
-
-        // Listener para TokensPurchased (MusicContract)
-        musicContractInstance.on(
-            'TokensPurchased',
-            async (buyer, amount, event) => {
-                console.log(
-                    `Event: TokensPurchased - Buyer: ${buyer}, Amount: ${amount}`
-                );
-                const transactionHash = event.log.transactionHash;
-
-                try {
-                    const [results] = await connection.execute(
-                        'INSERT INTO tokens_purchased (buyer, amount, transactionHash) VALUES (?, ?, ?)',
-                        [buyer, amount.toString(), transactionHash]
+                        'INSERT INTO withdrawal_rights (addressRight, addressThisMusicContract, percentageOfRights, transactionHash) VALUES (?, ?, ?, ?)',
+                        [addressRight, addressThisMusicContract, percentageOfRights, transactionHash]
                     );
                     console.log(
-                        'TokensPurchased event data inserted into database!'
+                        'withdrawalRight event data inserted into database!'
                     );
                 } catch (dbError) {
                     console.error(
-                        'Error inserting TokensPurchased event data:',
+                        'Error inserting withdrawalRight event data:',
                         dbError
                     );
                 }
             }
         );
 
-        // Listener para RightsSealed (MusicContract)
-        musicContractInstance.on('RightsSealed', async (caller, event) => {
-            console.log(`Event: RightsSealed - Caller: ${caller}`);
+        // Listener para musicWithSealedRights (MusicContract)
+        musicContractInstance.on('musicWithSealedRights', async (addressThisMusicContract, musicContactIsSealed, event) => {
+            console.log(`Event: musicWithSealedRights - Contract: ${addressThisMusicContract}, Sealed: ${musicContactIsSealed}`);
             const transactionHash = event.log.transactionHash;
 
             try {
                 const [results] = await connection.execute(
-                    'INSERT INTO rights_sealed (caller, transactionHash) VALUES (?, ?)',
-                    [caller, transactionHash]
+                    'INSERT INTO music_with_sealed_rights (addressThisMusicContract, musicContactIsSealed, transactionHash) VALUES (?, ?, ?)',
+                    [addressThisMusicContract, musicContactIsSealed, transactionHash]
                 );
-                console.log('RightsSealed event data inserted into database!');
+                console.log('musicWithSealedRights event data inserted into database!');
             } catch (dbError) {
-                console.error(
-                    'Error inserting RightsSealed event data:',
-                    dbError
+                console.error('Error inserting musicWithSealedRights event data:', dbError);
+            }
+        });
+
+        // Listener para tokenAssigned (MusicContract)
+        musicContractInstance.on('tokenAssigned', async (addressHolderToken, amountToken, event) => {
+            console.log(`Event: tokenAssigned - Address: ${addressHolderToken}, Amount: ${amountToken}`);
+            const transactionHash = event.log.transactionHash;
+
+            try {
+                const [results] = await connection.execute(
+                    'INSERT INTO token_assigned (addressHolderToken, amountToken, transactionHash) VALUES (?, ?, ?)',
+                    [addressHolderToken, amountToken.toString(), transactionHash]
                 );
+                console.log('tokenAssigned event data inserted into database!');
+            } catch (dbError) {
+                console.error('Error inserting tokenAssigned event data:', dbError);
+            }
+        });
+
+        // Listener para purchaseMade (MusicContract)
+        musicContractInstance.on('purchaseMade', async (purchaseAddress, activated, event) => {
+            console.log(`Event: purchaseMade - Address: ${purchaseAddress}, Activated: ${activated}`);
+            const transactionHash = event.log.transactionHash;
+
+            try {
+                const [results] = await connection.execute(
+                    'INSERT INTO purchase_made (purchaseAddress, activated, transactionHash) VALUES (?, ?, ?)',
+                    [purchaseAddress, activated, transactionHash]
+                );
+                console.log('purchaseMade event data inserted into database!');
+            } catch (dbError) {
+                console.error('Error inserting purchaseMade event data:', dbError);
+            }
+        });
+
+        // Listener para musicHeard (MusicContract)
+        musicContractInstance.on('musicHeard', async (hearAddress, confirm, event) => {
+            console.log(`Event: musicHeard - Address: ${hearAddress}, Confirm: ${confirm}`);
+            const transactionHash = event.log.transactionHash;
+
+            try {
+                const [results] = await connection.execute(
+                    'INSERT INTO music_heard (hearAddress, confirm, transactionHash) VALUES (?, ?, ?)',
+                    [hearAddress, confirm, transactionHash]
+                );
+                console.log('musicHeard event data inserted into database!');
+            } catch (dbError) {
+                console.error('Error inserting musicHeard event data:', dbError);
             }
         });
 

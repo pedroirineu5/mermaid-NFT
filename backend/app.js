@@ -1,5 +1,6 @@
 const express = require('express');
 const blockchainService = require('./services/blockchainService');
+const { listenToEvents } = require('./services/eventListener');
 
 require('dotenv').config();
 
@@ -12,6 +13,8 @@ async function startApp() {
     try {
         await blockchainService.initializeBlockchainService();
         console.log('Blockchain service initialized.');
+
+        listenToEvents();
 
         app.post('/validate-music-contract', async (req, res) => {
             const { addressMusicContract } = req.body;
@@ -26,7 +29,6 @@ async function startApp() {
                         musicContractAddress: addressMusicContract,
                     });
                 } else {
-                    // Isso nunca deve acontecer, pois se a transação foi revertida, um erro deve ter sido lançado
                     res.status(400).send({
                         error: 'Music contract validation failed.',
                         transactionHash: result.hash,
@@ -39,14 +41,41 @@ async function startApp() {
             }
         });
 
-        app.post('/assign-full-rights', async (req, res) => {
-            const { addressRight } = req.body;
+        app.post('/assign-rights', async (req, res) => {
+            const { addressRight, percentageOfRights } = req.body;
             try {
-                const transactionHash = await blockchainService.assignFullMusicRights(addressRight);
+                const isSealed = await blockchainService.isMusicContractSealed();
+
+                if (isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract already sealed`
+                    });
+                }
+
+                const transactionHash = await blockchainService.assignRights(addressRight, percentageOfRights);
                 res.send(`Music rights assigned! Transaction hash: ${transactionHash}`);
             } catch (error) {
                 console.error(error);
                 res.status(500).send(`Error assigning music rights: ${error.message}`);
+            }
+        });
+
+        app.post('/withdraw-rights', async (req, res) => {
+            const { addressRight, percentageOfRights } = req.body;
+            try {
+                const isSealed = await blockchainService.isMusicContractSealed();
+
+                if (isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract already sealed`
+                    });
+                }
+
+                const transactionHash = await blockchainService.withdrawRights(addressRight, percentageOfRights);
+                res.send(`Music rights withdraw! Transaction hash: ${transactionHash}`);
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(`Error withdraw music rights: ${error.message}`);
             }
         });
 
@@ -68,19 +97,19 @@ async function startApp() {
             }
         });
 
-        app.post('/buy-tokens', async (req, res) => {
-            const { amount } = req.body; // Agora recebe a quantidade de tokens
+        app.post('/buy-oyster-token', async (req, res) => {
             try {
-                // Obter o endereço do comprador do cabeçalho da requisição ou do corpo da requisição
-                const buyerAddress = req.headers['x-buyer-address'] || req.body.buyerAddress; 
+                const isSealed = await blockchainService.isMusicContractSealed();
 
-                if (!buyerAddress) {
-                    return res.status(400).send({ error: 'Buyer address is required.' });
+                if (!isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract is not sealed`
+                    });
                 }
 
-                const transactionHash = await blockchainService.buyTokens(buyerAddress, amount);
+                const transactionHash = await blockchainService.buy100OysterToken();
                 res.send(
-                    `${amount} tokens purchased by ${buyerAddress}! Transaction hash: ${transactionHash}`
+                    `100 OysterTokens purchased! Transaction hash: ${transactionHash}`
                 );
             } catch (error) {
                 console.error(error);
@@ -88,10 +117,18 @@ async function startApp() {
             }
         });
 
-        app.post('/sell-tokens', async (req, res) => {
+        app.post('/sell-oyster-token', async (req, res) => {
             const { amount } = req.body;
             try {
-                const transactionHash = await blockchainService.sellOysterTokens(
+                const isSealed = await blockchainService.isMusicContractSealed();
+
+                if (!isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract is not sealed`
+                    });
+                }
+
+                const transactionHash = await blockchainService.sellOysterToken(
                     amount
                 );
                 res.send(
@@ -100,6 +137,46 @@ async function startApp() {
             } catch (error) {
                 console.error(error);
                 res.status(500).send(`Error selling tokens: ${error.message}`);
+            }
+        });
+
+        app.post('/buy-rights-music', async (req, res) => {
+            try {
+                const isSealed = await blockchainService.isMusicContractSealed();
+
+                if (!isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract is not sealed`
+                    });
+                }
+
+                const transactionHash = await blockchainService.buyRightsMusic();
+                res.send(
+                    `Music rights purchased! Transaction hash: ${transactionHash}`
+                );
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(`Error purchasing music rights: ${error.message}`);
+            }
+        });
+
+        app.post('/listen-music', async (req, res) => {
+            try {
+                const isSealed = await blockchainService.isMusicContractSealed();
+
+                if (!isSealed) {
+                    return res.status(400).send({
+                        error: `Music contract is not sealed`
+                    });
+                }
+
+                const transactionHash = await blockchainService.listenMusic();
+                res.send(
+                    `Music listened! Transaction hash: ${transactionHash}`
+                );
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(`Error listening music: ${error.message}`);
             }
         });
 
@@ -131,6 +208,16 @@ async function startApp() {
             } catch (error) {
                 console.error(error);
                 res.status(500).send(`Error checking if contract is sealed: ${error.message}`);
+            }
+        });
+
+        app.get('/view-balance', async (req, res) => {
+            try {
+                const balance = await blockchainService.viewBalance();
+                res.json({ balance: balance.toString() });
+            } catch (error) {
+                console.error(error);
+                res.status(500).send(`Error checking balance: ${error.message}`);
             }
         });
 
