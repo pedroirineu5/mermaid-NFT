@@ -1,217 +1,108 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "./OysterToken.sol";
-import "./OysterVault.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract MusicContract is Ownable {
     IERC20 public oysterToken;
-    OysterVault public vault;
+    address public rightsHolder;
+    bool public rightsSealed;
 
-    mapping(address => uint256) public tokensPerAddress;
-    mapping(address => uint256) public rightAssigned;
-    address[] public rightHolders;
+    mapping(address => uint256) public tokenBalances;
 
-    uint256 public remainingRights;
-    bool public musicContactIsSealed;
-    uint256 public gweiPerToken;
-
-    event FullRightsAssigned(address indexed to, uint256 timestamp);
-    event SellTokens(address indexed caller, uint256 amount);
-    event TokensPurchased(address indexed buyer, uint256 amount);
-    event RightsSealed(address indexed caller);
+    event RightsAssigned(address indexed newRightsHolder);
+    event RightsSealed();
+    event TokensBought(address indexed buyer, uint256 amount);
+    event TokensSold(address indexed seller, uint256 amount);
+    event OysterTokenSet(address indexed oysterToken);
     event Log(string message);
     event LogAddress(string message, address addr);
     event LogUint(string message, uint256 value);
-    event LogUintUint(string message, uint256 value1, uint256 value2);
-    event LogAddressUint(string message, address addr, uint256 value);
-    event LogAddressAddressUint(
-        string message,
-        address addr1,
-        address addr2,
-        uint256 value
-    );
 
-    constructor(
-        IERC20 _oysterToken,
-        address initialOwner,
-        OysterVault _vault,
-        uint256 _gweiPerToken
-    )
-        Ownable(initialOwner)
-    {
-        oysterToken = _oysterToken;
-        vault = _vault;
-        remainingRights = 100;
-        musicContactIsSealed = false;
-        gweiPerToken = _gweiPerToken;
+    constructor(address _oysterToken, address initialOwner) Ownable(initialOwner) {
+        emit LogAddress("MusicContract: Owner", owner());
+        emit OysterTokenSet(_oysterToken);
+        oysterToken = IERC20(_oysterToken);
+        rightsSealed = false; // Inicializado como false
     }
 
-    function sealRights() external onlyOwner returns (bool) {
-        emit Log("MusicContract: sealRights called");
-        emit LogAddress("by", msg.sender);
-        require(
-            remainingRights == 0,
-            "The contract cannot be sealed until all rights have been assigned"
-        );
-        require(
-            !musicContactIsSealed,
-            "The contract is already sealed"
-        );
-        musicContactIsSealed = true;
-        emit RightsSealed(msg.sender);
-        emit Log("MusicContract: RightsSealed event emitted");
+    function setOysterToken(address _oysterToken) external returns (bool) {
+        emit Log("MusicContract: setOysterToken called");
+        emit LogAddress("MusicContract: setOysterToken called with", _oysterToken);
+        emit LogAddress("MusicContract: Current oysterToken", address(oysterToken));
+        emit LogAddress("MusicContract: owner", owner());
+        emit LogAddress("MusicContract: msg.sender", msg.sender);
+        emit OysterTokenSet(_oysterToken);
+        oysterToken = IERC20(_oysterToken);
+        emit LogAddress("MusicContract: oysterToken address after", address(oysterToken));
         return true;
     }
 
-    function assignFullRights(address _to) external onlyOwner returns (bool) {
-        emit Log("MusicContract: assignFullRights called");
+    function assignFullRights(address _newRightsHolder) external onlyOwner {
+        require(!rightsSealed, "Rights have been sealed");
+        rightsHolder = _newRightsHolder;
+        emit RightsAssigned(_newRightsHolder);
+    }
+
+    function sealRights() external onlyOwner {
+        require(!rightsSealed, "Rights have already been sealed");
+        rightsSealed = true;
+        emit RightsSealed();
+    }
+
+    function buyTokens(uint256 _amount) external {
+        emit Log("MusicContract: buyTokens called");
         emit LogAddress("by", msg.sender);
-        emit LogAddress("to", _to);
+        emit LogUint("amount", _amount);
         require(
-            !musicContactIsSealed,
-            "The contract is already sealed, no modification of rights can be made"
+            address(oysterToken) != address(0),
+            "OysterToken address not set"
         );
-        require(
-            remainingRights > 0,
-            "There are no rights left to assign"
-        );
-        rightAssigned[_to] = 100;
-        remainingRights = 0;
-        rightHolders.push(_to);
-        emit FullRightsAssigned(_to, block.timestamp);
-        emit Log("MusicContract: FullRightsAssigned event emitted");
-        return true;
-    }
+        emit Log("MusicContract: Before transfer");
+        emit LogAddress("Sender", msg.sender);
+        emit LogAddress("This", address(this));
+        emit LogUint("Amount", _amount);
 
-    function getRightHolders() external view returns (address[] memory) {
-        return rightHolders;
-    }
-
-    function getRemainingRightsDivision() external view returns (uint256) {
-        return remainingRights;
-    }
-
-    function divisionOfRights(address _of) external view returns (uint256) {
-        return rightAssigned[_of];
-    }
-
-    function viewTokensPerAddress(address _of) external view returns (uint256) {
-        return tokensPerAddress[_of];
-    }
-
-    function isMusicContractSealed() external view returns (bool) {
-        return musicContactIsSealed;
-    }
-
-    function purchaseTokens(address buyer, uint256 amount) external {
-        emit Log("MusicContract: purchaseTokens called");
-        emit LogAddress("by", msg.sender);
-        emit LogAddress("for buyer", buyer);
-        emit LogUint("amount", amount);
-        require(
-            msg.sender == address(oysterToken),
-            "Only OysterToken can call this function"
-        );
-        emit LogAddressUint(
-            "MusicContract: Balance of MusicContract before purchase",
-            address(this),
-            oysterToken.balanceOf(address(this))
-        );
-        // Aprova o vault a gastar tokens do MusicContract
-        require(
-            oysterToken.approve(address(vault), amount),
-            "Approval failed"
-        );
-        // Adiciona chamada do vault para receber os tokens
-        require(
-            vault.receiveTokens(address(this), amount),
-            "Token transfer failed"
-        );
-        emit LogAddressUint(
-            "MusicContract: Balance of MusicContract after purchase",
-            address(this),
-            oysterToken.balanceOf(address(this))
-        );
-        tokensPerAddress[buyer] += amount;
-        emit TokensPurchased(buyer, amount);
-        emit Log("MusicContract: TokensPurchased event emitted");
-    }
-
-    function sellTokens(uint256 amount) external payable {
-        emit Log("MusicContract: sellTokens called");
-        emit LogAddress("by", msg.sender);
-        emit LogUint("amount", amount);
-        require(amount > 0, "Amount must be greater than zero");
-        require(
-            tokensPerAddress[msg.sender] >= amount,
-            "Insufficient token balance"
-        );
-
-        emit LogUintUint(
-            "MusicContract: User tokens before and after",
-            tokensPerAddress[msg.sender],
-            tokensPerAddress[msg.sender] - amount
-        );
-
-        emit LogAddressUint(
-            "MusicContract: Balance of MusicContract before selling",
-            address(this),
-            oysterToken.balanceOf(address(this))
-        );
-
-        // Aprova o vault a gastar a quantidade correta de tokens do MusicContract
-        emit LogAddressAddressUint(
-            "MusicContract: Approving vault to spend tokens",
-            address(this),
-            address(vault),
-            amount
-        );
-        require(
-            oysterToken.approve(address(vault), amount),
-            "Approval failed"
-        );
-        emit LogAddressUint(
-            "MusicContract: Allowance for vault",
-            address(vault),
-            oysterToken.allowance(address(this), address(vault))
-        );
-
-        tokensPerAddress[msg.sender] -= amount;
+        // Log da transferência de tokens
         emit LogUint(
-            "MusicContract: Tokens remaining for user",
-            tokensPerAddress[msg.sender]
+            "MusicContract: oysterToken.balanceOf(msg.sender) before",
+            oysterToken.balanceOf(msg.sender)
         );
-
-        // Em vez de transferir diretamente, chamar receiveTokens do vault
-        emit Log("MusicContract: Calling receiveTokens on vault");
-        require(
-            vault.receiveTokens(address(this), amount),
-            "Token transfer failed"
-        );
-        emit Log("MusicContract: receiveTokens called on vault");
-
-        // Calcula o valor em Wei a ser transferido para o vendedor
-        uint256 amountToTransfer = amount * gweiPerToken;
         emit LogUint(
-            "MusicContract: Amount to transfer in Wei",
-            amountToTransfer
+            "MusicContract: oysterToken.balanceOf(address(this)) before",
+            oysterToken.balanceOf(address(this))
         );
-        emit Log("MusicContract: Transferring Wei to seller");
-        // Transfere o valor em Wei para o vendedor
-        payable(msg.sender).transfer(amountToTransfer);
-        emit Log("MusicContract: Transferred Wei to seller");
-        emit SellTokens(msg.sender, amount);
-        emit Log("MusicContract: SellTokens event emitted");
+        emit LogUint(
+            "MusicContract: oysterToken.allowance(msg.sender, address(this)) before",
+            oysterToken.allowance(msg.sender, address(this))
+        );
+
+        oysterToken.transferFrom(msg.sender, address(this), _amount);
+
+        emit Log("MusicContract: After transfer");
+        emit LogUint(
+            "MusicContract: oysterToken.balanceOf(msg.sender) after",
+            oysterToken.balanceOf(msg.sender)
+        );
+        emit LogUint(
+            "MusicContract: oysterToken.balanceOf(address(this)) after",
+            oysterToken.balanceOf(address(this))
+        );
+
+        tokenBalances[msg.sender] += _amount;
+        emit LogUint("MusicContract: tokenBalances[msg.sender]", tokenBalances[msg.sender]);
+        emit TokensBought(msg.sender, _amount);
     }
 
-    function approve(address spender, uint256 amount) external returns (bool) {
-        return oysterToken.approve(spender, amount);
+    function sellTokens(uint256 _amount) external {
+        require(tokenBalances[msg.sender] >= _amount, "Insufficient balance");
+        tokenBalances[msg.sender] -= _amount;
+        oysterToken.transfer(msg.sender, _amount);
+        emit TokensSold(msg.sender, _amount);
     }
 
-    function getContractType() external pure returns (string memory) {
-        return "MusicContract";
+    function isSealed() external view returns (bool) {
+        return rightsSealed;
     }
 }

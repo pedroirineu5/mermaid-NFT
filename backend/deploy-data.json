@@ -1,7 +1,7 @@
 {
   "network": "localhost",
   "oysterToken": {
-    "address": "0x395eFed1A1a9dBA62f9B0cAFf747Ec3691495803",
+    "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     "abi": [
       "constructor(address,uint256)",
       "error ECDSAInvalidSignature()",
@@ -60,7 +60,7 @@
     "gweiPerToken": 50000000000000
   },
   "oysterVault": {
-    "address": "0x61849D7490Fa1Db1d67FA3439d0A611C7B867CAF",
+    "address": "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
     "abi": [
       "constructor(address,address)",
       "error OwnableInvalidOwner(address)",
@@ -89,7 +89,7 @@
     ]
   },
   "musicContract": {
-    "address": "0x56a65a4137BA486cAf33b6C188F72137441A0D4e",
+    "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
     "abi": [
       "constructor(address,address,address,uint256)",
       "error OwnableInvalidOwner(address)",
