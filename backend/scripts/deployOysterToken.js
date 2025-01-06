@@ -3,43 +3,27 @@ const fs = require("fs");
 const path = require("path");
 const { updateEnvFile } = require("./updateEnv");
 
-async function isGanacheRunning() {
-    try {
-        await hre.ethers.provider.getNetwork();
-        return true;
-    } catch (error) {
-        return false;
-    }
-}
-
 async function main() {
-    const deployer = (await hre.ethers.getSigners())[0];
+    const [deployer] = await hre.ethers.getSigners();
 
     console.log("Deploying contracts with the account:", deployer.address);
-
-    if (!(await isGanacheRunning())) {
-        console.error(
-            "Ganache is not running. Please start Ganache and try again."
-        );
-        process.exit(1);
-    }
 
     const OysterToken = await hre.ethers.getContractFactory("OysterToken");
     const oysterToken = await OysterToken.deploy(deployer.address);
     await oysterToken.waitForDeployment();
-    console.log("OysterToken deployed to:", await oysterToken.getAddress());
+    const oysterTokenAddress = await oysterToken.getAddress();
+    console.log("OysterToken deployed to:", oysterTokenAddress);
 
     const OysterVault = await hre.ethers.getContractFactory("OysterVault");
     const oysterVault = await OysterVault.deploy(
-        await oysterToken.getAddress(),
+        oysterTokenAddress,
         deployer.address
     );
     await oysterVault.waitForDeployment();
-    console.log("OysterVault deployed to:", await oysterVault.getAddress());
+    const oysterVaultAddress = await oysterVault.getAddress();
+    console.log("OysterVault deployed to:", oysterVaultAddress);
 
-    const setVaultTx = await oysterToken.setVault(
-        await oysterVault.getAddress()
-    );
+    const setVaultTx = await oysterToken.setVault(oysterVaultAddress);
     await setVaultTx.wait();
     console.log("OysterVault address set in OysterToken contract");
 
@@ -48,42 +32,41 @@ async function main() {
     await mintTx.wait();
     console.log(`Minted ${mintAmount} tokens to OysterVault`);
 
-    const vaultBalance = await oysterToken.balanceOf(
-        await oysterVault.getAddress()
-    );
+    const vaultBalance = await oysterToken.balanceOf(oysterVaultAddress);
     console.log(
         `OysterVault balance after minting: ${vaultBalance.toString()}`
     );
 
-    const rightPurchaseValueInGwei = 1000;
-    const valueForListeningInGwei = 100;
+    const rightPurchaseValueInGwei = process.env.RIGHT_PURCHASE_VALUE_IN_GWEI;
+    const valueForListeningInGwei = process.env.VALUE_FOR_LISTENING_IN_GWEI;
 
     const MusicContract = await hre.ethers.getContractFactory("MusicContract");
     const musicContract = await MusicContract.deploy(
-        await oysterToken.getAddress(),
-        await oysterVault.getAddress(),
+        oysterTokenAddress,
+        oysterVaultAddress,
         rightPurchaseValueInGwei,
         valueForListeningInGwei
     );
     await musicContract.waitForDeployment();
-    console.log("MusicContract deployed to:", await musicContract.getAddress());
+    const musicContractAddress = await musicContract.getAddress();
+    console.log("MusicContract deployed to:", musicContractAddress);
 
-    const validateMusicContractTx = await oysterToken.validateMusicContracts(await musicContract.getAddress());
+    const validateMusicContractTx = await oysterToken.validateMusicContracts(musicContractAddress);
     await validateMusicContractTx.wait();
     console.log("MusicContract address validated in OysterToken contract");
 
     const deployData = {
         network: hre.network.name,
         oysterToken: {
-            address: await oysterToken.getAddress(),
+            address: oysterTokenAddress,
             abi: oysterToken.interface.format("json"),
         },
         oysterVault: {
-            address: await oysterVault.getAddress(),
+            address: oysterVaultAddress,
             abi: oysterVault.interface.format("json"),
         },
         musicContract: {
-            address: await musicContract.getAddress(),
+            address: musicContractAddress,
             abi: musicContract.interface.format("json"),
         },
         rightPurchaseValueInGwei: rightPurchaseValueInGwei,

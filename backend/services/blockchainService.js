@@ -2,7 +2,7 @@ const { ethers } = require('ethers');
 const fs = require('fs');
 require('dotenv').config();
 
-const provider = new ethers.JsonRpcProvider('http://127.0.0.1:8545');
+const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_PROVIDER_URL);
 
 let oysterTokenInstance;
 let musicContractInstance;
@@ -21,15 +21,7 @@ async function initializeBlockchainService() {
     const oysterVaultAddress = deployData.oysterVault.address;
     const oysterVaultABI = JSON.parse(fs.readFileSync('./artifacts/contracts/OysterToken.sol/OysterVault.json', 'utf8')).abi;
 
-    const privateKey = process.env.PRIVATE_KEY;
-
-    if (!privateKey) {
-        throw new Error(
-            'PRIVATE_KEY environment variable not set. Please define it in your .env file.'
-        );
-    }
-
-    wallet = new ethers.Wallet(privateKey, provider);
+    wallet = (await hre.ethers.getSigners())[0];
     console.log("Wallet Address:", await wallet.getAddress());
 
     oysterTokenInstance = new ethers.Contract(
