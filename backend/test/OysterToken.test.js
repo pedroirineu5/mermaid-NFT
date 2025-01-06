@@ -43,10 +43,10 @@ describe("OysterToken MVP", function () {
         await oysterToken.setVault(oysterVault.target);
         console.log("MusicContract address:", musicContract.target);
         console.log("MusicContract isSealed:", await musicContract.isSealed());
-        // await musicContract.connect(owner).sealRights();
         await oysterToken.validateMusicContract(musicContract.target);
 
         const mintAmount = ethers.parseUnits("100000", 18);
+        const transferToVaultAmount = ethers.parseUnits("99970", 18);
         console.log("Mint amount:", mintAmount.toString());
 
         console.log(
@@ -64,7 +64,7 @@ describe("OysterToken MVP", function () {
         );
 
         console.log("Transferring tokens to vault...");
-        await oysterToken.connect(owner).transfer(oysterVault.target, mintAmount);
+        await oysterToken.connect(owner).transfer(oysterVault.target, transferToVaultAmount);
         console.log("Transfer complete.");
 
         console.log(
@@ -76,13 +76,15 @@ describe("OysterToken MVP", function () {
             (await oysterToken.balanceOf(oysterVault.target)).toString()
         );
 
-        // Aprovar OysterVault a gastar tokens do OysterToken
         console.log(
             "Approving OysterVault to spend owner's tokens..."
         );
-        await oysterVault.connect(owner).setOysterToken(oysterToken.target);
-        // Aprovação agora é feita diretamente no teste
-        // await oysterVault.connect(owner).approveTokenSpending(oysterVault.target, mintAmount);
+
+        console.log(
+            "Owner balance before approve:",
+            (await oysterToken.balanceOf(owner.address)).toString()
+        );
+
         console.log(
             "Approve complete. Allowance:",
             (
@@ -100,33 +102,9 @@ describe("OysterToken MVP", function () {
         });
     });
 
-    // it("Should emit BuyTokens event on successful purchase", async function () {
-    //     const amountToBuy = ethers.parseUnits("10", 18);
-    //     console.log(`Attempting to buy ${amountToBuy} tokens...`);
-    //     await expect(
-    //         oysterToken.connect(addr1).buyTokens(musicContract.target, amountToBuy)
-    //     )
-    //         .to.emit(oysterToken, "BuyTokens")
-    //         .withArgs(addr1.address, musicContract.target, amountToBuy);
-    //     console.log("BuyTokens event emitted successfully.");
-    // });
-
-    // it("Should revert when buying tokens for an invalid MusicContract", async function () {
-    //     const amountToBuy = ethers.parseUnits("10", 18);
-    //     const invalidMusicContract = addr2;
-    //     console.log(`Attempting to buy tokens for an invalid MusicContract...`);
-    //     await expect(
-    //         oysterToken
-    //             .connect(addr1)
-    //             .buyTokens(invalidMusicContract.address, amountToBuy)
-    //     ).to.be.revertedWith("Invalid MusicContract");
-    //     console.log("Transaction reverted as expected.");
-    // });
-
     it("Should allow OysterVault to transfer tokens using transferFrom", async function () {
         const amountToTransfer = ethers.parseUnits("5", 18);
 
-        // Aprovar o OysterVault a gastar tokens do owner
         console.log(`Approving OysterVault to spend owner's tokens...`);
         await oysterToken.connect(owner).approve(oysterVault.target, amountToTransfer);
         console.log(
@@ -134,87 +112,101 @@ describe("OysterToken MVP", function () {
             (await oysterToken.allowance(owner.address, oysterVault.target)).toString()
         );
 
-        // O owner chama transferFrom no OysterVault, permitindo que ele use a allowance
         await expect(
             oysterVault.connect(owner).transferFrom(
-                oysterVault.target,
+                owner.address,
                 addr2.address,
                 amountToTransfer
             )
         )
         .to.emit(oysterToken, "Transfer")
-        .withArgs(oysterVault.target, addr2.address, amountToTransfer);
+        .withArgs(owner.address, addr2.address, amountToTransfer);
 
         expect(await oysterToken.balanceOf(addr2.address)).to.equal(
             amountToTransfer
         );
         expect(await oysterToken.balanceOf(oysterVault.target)).to.equal(
-            ethers.parseUnits("99995", 18)
+            ethers.parseUnits("99970", 18)
         );
     });
 
-    // it("Should allow addr1 to buy tokens", async function () {
-    //     const amountToBuy = ethers.parseUnits("10", 18);
-    //     console.log(`addr1 attempting to buy ${amountToBuy} tokens...`);
+    it("Should allow addr1 to buy tokens", async function () {
+        const amountToBuy = ethers.parseUnits("10", 18);
+        console.log(`addr1 attempting to buy ${amountToBuy} tokens...`);
 
-    //     // Transferir tokens do OysterVault para o addr1 antes da compra
-    //     const transferAmount = ethers.parseUnits("20", 18);
+        // Transferir tokens do Owner para o addr1 antes da compra
+        const transferAmount = ethers.parseUnits("20", 18);
+        await oysterToken.connect(owner).transfer(addr1.address, transferAmount);
 
-    //     await oysterVault.connect(owner).transferFrom(oysterVault.target, addr1.address, transferAmount);
+        // LOGS DE DEBUG
+        console.log("Owner balance after transfer to addr1:", (await oysterToken.balanceOf(owner.address)).toString());
+        console.log("addr1 balance after transfer:", (await oysterToken.balanceOf(addr1.address)).toString());
 
-    //     console.log(
-    //         `Transferred ${transferAmount} tokens from OysterVault to addr1.`
-    //     );
+        // 1. addr1 aprova o OysterToken para gastar seus tokens
+        await oysterToken.connect(addr1).approve(oysterToken.target, amountToBuy);
 
-    //     // addr1 aprova o OysterToken para gastar seus tokens
-    //     await oysterToken.connect(addr1).approve(oysterToken.target, amountToBuy);
+        // LOGS DE DEBUG
+        console.log("Allowance do OysterToken no addr1 antes de buyTokens:", (await oysterToken.allowance(addr1.address, oysterToken.target)).toString());
+        
+        // LOG DE DEBUG (adicionado)
+        console.log("Allowance do OysterToken no addr1 APÓS approve:", (await oysterToken.allowance(addr1.address, oysterToken.target)).toString());
 
-    //     await oysterToken.connect(addr1).buyTokens(musicContract.target, amountToBuy);
-    //     console.log("addr1 bought tokens successfully.");
-    //     expect(await musicContract.tokenBalances(addr1.address)).to.equal(
-    //         amountToBuy
-    //     );
-    //     console.log(
-    //         `addr1 token balance in MusicContract: ${await musicContract.tokenBalances(
-    //             addr1.address
-    //         )}`
-    //     );
-    // });
+        // 2. addr1 chama buyTokens no OysterToken, passando o endereço do MusicContract
+        await oysterToken.connect(addr1).buyTokens(musicContract.target, amountToBuy);
+        console.log("addr1 bought tokens successfully.");
 
-    // it("Should allow addr1 to sell tokens", async function () {
-    //     const amountToBuy = ethers.parseUnits("10", 18);
-    //     const amountToSell = ethers.parseUnits("5", 18);
-    //     console.log(`addr1 attempting to buy ${amountToBuy} tokens...`);
-    //     await oysterToken
-    //         .connect(addr1)
-    //         .buyTokens(musicContract.target, amountToBuy);
-    //     console.log("addr1 bought tokens successfully.");
-    //     console.log(`addr1 attempting to sell ${amountToSell} tokens...`);
-    //     await musicContract.connect(addr1).sellTokens(amountToSell);
-    //     console.log("addr1 sold tokens successfully.");
-    //     expect(await musicContract.tokenBalances(addr1.address)).to.equal(
-    //         amountToBuy.sub(amountToSell)
-    //     );
-    //     console.log(
-    //         `addr1 token balance in MusicContract: ${await musicContract.tokenBalances(
-    //             addr1.address
-    //         )}`
-    //     );
-    // });
+        // 3. Verificar o saldo de addr1 no MusicContract
+        expect(await musicContract.tokenBalances(addr1.address)).to.equal(amountToBuy);
+        console.log(
+            `addr1 token balance in MusicContract: ${await musicContract.tokenBalances(
+                addr1.address
+            )}`
+        );
+    });
 
-    // it("Should allow owner to assign full rights", async function () {
-    //     console.log(`Assigning full rights to addr1...`);
-    //     await musicContract.connect(owner).assignFullRights(addr1.address);
-    //     console.log("Full rights assigned.");
-    //     expect(await musicContract.rightsHolder()).to.equal(addr1.address);
-    //     console.log(`Rights holder: ${await musicContract.rightsHolder()}`);
-    // });
+    it("Should allow addr1 to sell tokens", async function () {
+        const amountToBuy = ethers.parseUnits("10", 18);
+        const amountToSell = ethers.parseUnits("5", 18);
+        console.log("Owner balance before transfer to addr1 (sellTokens):", (await oysterToken.balanceOf(owner.address)).toString());
+        console.log("addr1 balance before transfer (sellTokens):", (await oysterToken.balanceOf(addr1.address)).toString());
+        // Certifique-se de que addr1 tenha tokens suficientes para vender
+        // 1. addr1 aprova o OysterToken (e não o MusicContract) para gastar seus tokens
+        await oysterToken.connect(addr1).approve(oysterToken.target, amountToBuy);
+        // 2. Comprar tokens
+        await oysterToken.connect(addr1).buyTokens(musicContract.target, amountToBuy);
 
-    // it("Should allow owner to seal rights", async function () {
-    //     console.log(`Sealing rights...`);
-    //     await musicContract.connect(owner).sealRights();
-    //     console.log("Rights sealed.");
-    //     expect(await musicContract.isSealed()).to.be.true;
-    //     console.log(`Rights sealed: ${await musicContract.isSealed()}`);
-    // });
+        // Agora addr1 tem tokens no MusicContract
+
+        // 2. addr1 chama sellTokens no MusicContract
+        console.log(`addr1 attempting to sell ${amountToSell} tokens...`);
+
+        // LOGS DE DEBUG
+        console.log("addr1 balance in MusicContract before sell:", (await musicContract.tokenBalances(addr1.address)).toString());
+
+        await musicContract.connect(addr1).sellTokens(amountToSell);
+        console.log("addr1 sold tokens successfully.");
+
+        // 3. Verificar o saldo de addr1 no MusicContract
+        expect(await musicContract.tokenBalances(addr1.address)).to.equal(
+            amountToBuy.sub(amountToSell)
+        );
+        // LOGS DE DEBUG
+        console.log("addr1 balance in MusicContract after sell:", (await musicContract.tokenBalances(addr1.address)).toString());
+    });
+
+    it("Should allow owner to assign full rights", async function () {
+        console.log(`Assigning full rights to addr1...`);
+        await musicContract.connect(owner).assignFullRights(addr1.address);
+        console.log("Full rights assigned.");
+        expect(await musicContract.rightsHolder()).to.equal(addr1.address);
+        console.log(`Rights holder: ${await musicContract.rightsHolder()}`);
+    });
+
+    it("Should allow owner to seal rights", async function () {
+        console.log(`Sealing rights...`);
+        await musicContract.connect(owner).sealRights();
+        console.log("Rights sealed.");
+        expect(await musicContract.isSealed()).to.be.true;
+        console.log(`Rights sealed: ${await musicContract.isSealed()}`);
+    });
 });

@@ -20,7 +20,10 @@ contract MusicContract is Ownable {
     event LogAddress(string message, address addr);
     event LogUint(string message, uint256 value);
 
-    constructor(address _oysterToken, address initialOwner) Ownable(initialOwner) {
+    constructor(
+        address _oysterToken,
+        address initialOwner
+    ) Ownable(initialOwner) {
         emit LogAddress("MusicContract: Owner", owner());
         emit OysterTokenSet(_oysterToken);
         oysterToken = IERC20(_oysterToken);
@@ -78,8 +81,6 @@ contract MusicContract is Ownable {
             oysterToken.allowance(msg.sender, address(this))
         );
 
-        oysterToken.transferFrom(msg.sender, address(this), _amount);
-
         emit Log("MusicContract: After transfer");
         emit LogUint(
             "MusicContract: oysterToken.balanceOf(msg.sender) after",
@@ -91,7 +92,10 @@ contract MusicContract is Ownable {
         );
 
         tokenBalances[msg.sender] += _amount;
-        emit LogUint("MusicContract: tokenBalances[msg.sender]", tokenBalances[msg.sender]);
+        emit LogUint(
+            "MusicContract: tokenBalances[msg.sender]",
+            tokenBalances[msg.sender]
+        );
         emit TokensBought(msg.sender, _amount);
     }
 

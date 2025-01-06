@@ -36,7 +36,6 @@ contract OysterToken is ERC20, Ownable {
 
     function validateMusicContract(address _musicContract) external onlyOwner {
         require(_musicContract.code.length > 0, "Invalid MusicContract address");
-        // Chama setOysterToken no MusicContract para validar e configurar
         (bool success, bytes memory data) = _musicContract.call(
             abi.encodeWithSignature("setOysterToken(address)", address(this))
         );
@@ -50,49 +49,46 @@ contract OysterToken is ERC20, Ownable {
         emit LogAddress("by", msg.sender);
         emit LogAddress("for MusicContract", _musicContract);
         emit LogUint("amount", _amount);
+        emit LogUint(
+            "OysterToken: balanceOf(msg.sender) before",
+            balanceOf(msg.sender)
+        );
+        emit LogUint(
+            "OysterToken: balanceOf(_musicContract) before",
+            balanceOf(_musicContract)
+        );
+        emit LogUint(
+            "OysterToken: allowance(msg.sender, _musicContract) before",
+            allowance(msg.sender, _musicContract)
+        );
 
         require(validMusicContracts[_musicContract], "Invalid MusicContract");
 
         emit Log("OysterToken: Before transferFrom");
-        emit LogAddress("Vault", vault);
-        emit LogAddress("MusicContract", _musicContract);
+        emit LogAddress("From", msg.sender);
+        emit LogAddress("To", _musicContract);
         emit LogUint("Amount", _amount);
         emit LogUint("Vault Balance", this.balanceOf(vault));
         emit LogUint("Allowance", this.allowance(vault, address(this)));
 
-        // Verifica se o OysterVault tem saldo suficiente
-        require(this.balanceOf(vault) >= _amount, "Insufficient vault balance");
-
-        // Tenta a transferência e captura o resultado
-        (bool success, bytes memory returnData) = address(this).call(
-            abi.encodeWithSignature(
-                "transferFrom(address,address,uint256)",
-                vault,
-                _musicContract,
-                _amount
-            )
+        // Chamar transferFrom do ERC20 (super)
+        bool success = super.transferFrom(msg.sender, _musicContract, _amount);
+        emit Log("OysterToken: transferFrom called");
+        emit LogUint(
+            "OysterToken: balanceOf(msg.sender) after",
+            balanceOf(msg.sender)
         );
-
-        // Emite logs com base no resultado
+        emit LogUint(
+            "OysterToken: balanceOf(_musicContract) after",
+            balanceOf(_musicContract)
+        );
         if (success) {
             emit Log("OysterToken: transferFrom successful");
-            if (returnData.length > 0) {
-                emit Log("OysterToken: transferFrom return data");
-            }
         } else {
             emit Log("OysterToken: transferFrom failed");
-            if (returnData.length > 0) {
-                emit Log("OysterToken: transferFrom revert reason:");
-                // Tenta decodificar o revert reason, se possível
-                if (returnData.length > 32) {
-                    string memory revertReason = abi.decode(returnData, (string));
-                    emit Log(revertReason);
-                }
-            }
         }
 
         require(success, "Token transfer failed");
-
         emit Log("OysterToken: After transferFrom");
 
         emit BuyTokens(msg.sender, _musicContract, _amount);
@@ -113,8 +109,11 @@ contract OysterToken is ERC20, Ownable {
         emit LogUint("OysterToken: Approval amount", amount);
         emit LogAddress("OysterToken: Owner of approval", owner());
         emit LogAddress("OysterToken: msg.sender of approval", msg.sender);
-        // Usar owner() em vez de msg.sender
-        _approve(owner(), spender, amount);
+        _approve(msg.sender, spender, amount);
+        emit LogUint(
+            "OysterToken: Allowance after _approve",
+            allowance(msg.sender, spender)
+        );
         return true;
     }
 
@@ -127,9 +126,23 @@ contract OysterToken is ERC20, Ownable {
         emit LogAddress("OysterToken: transferFrom from", from);
         emit LogAddress("OysterToken: transferFrom to", to);
         emit LogUint("OysterToken: transferFrom amount", amount);
+        emit LogUint("OysterToken: Balance of from before", balanceOf(from));
+        emit LogUint("OysterToken: Balance of to before", balanceOf(to));
+        emit LogUint(
+            "OysterToken: Allowance from, spender before",
+            allowance(from, msg.sender)
+        );
+
         bool result = super.transferFrom(from, to, amount);
+
         emit Log("OysterToken: transferFrom result: ");
         emit Log(result ? "true" : "false");
+        emit LogUint("OysterToken: Balance of from after", balanceOf(from));
+        emit LogUint("OysterToken: Balance of to after", balanceOf(to));
+        emit LogUint(
+            "OysterToken: Allowance from, spender after",
+            allowance(from, msg.sender)
+        );
         return result;
     }
 }
