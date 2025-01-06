@@ -1,9 +1,12 @@
 const hre = require("hardhat");
 const fs = require("fs");
 const path = require("path");
-const { updateEnvFile } = require("./updateEnv");
+const { createEnvFileIfNotExists, updateEnvFile } = require("./updateEnv");
 
 async function main() {
+    // Cria o arquivo .env se ele não existir
+    await createEnvFileIfNotExists();
+
     const [deployer] = await hre.ethers.getSigners();
 
     console.log("Deploying contracts with the account:", deployer.address);
@@ -37,8 +40,11 @@ async function main() {
         `OysterVault balance after minting: ${vaultBalance.toString()}`
     );
 
-    const rightPurchaseValueInGwei = process.env.RIGHT_PURCHASE_VALUE_IN_GWEI;
-    const valueForListeningInGwei = process.env.VALUE_FOR_LISTENING_IN_GWEI;
+    const envPath = path.join(__dirname, "..", ".env");
+    const envConfig = require("dotenv").config({ path: envPath }).parsed || {};
+
+    const rightPurchaseValueInGwei = envConfig.RIGHT_PURCHASE_VALUE_IN_GWEI;
+    const valueForListeningInGwei = envConfig.VALUE_FOR_LISTENING_IN_GWEI;
 
     const MusicContract = await hre.ethers.getContractFactory("MusicContract");
     const musicContract = await MusicContract.deploy(

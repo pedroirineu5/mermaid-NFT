@@ -100,6 +100,6 @@
       "receive() payable"
     ]
   },
-  "rightPurchaseValueInGwei": 1000,
-  "valueForListeningInGwei": 100
+  "rightPurchaseValueInGwei": "1000",
+  "valueForListeningInGwei": "100"
 }
