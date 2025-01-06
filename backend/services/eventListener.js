@@ -33,7 +33,7 @@ async function listenToEvents() {
                 console.log(
                     `Event: validatedMusicContract - Address: ${address}, Valid: ${valid}`
                 );
-                const transactionHash = event.log.transactionHash;
+                const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
                 try {
                     console.log(
@@ -75,7 +75,7 @@ async function listenToEvents() {
                 console.log(
                     `Event: assignedRight - Address: ${addressRight}, Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`
                 );
-                const transactionHash = event.log.transactionHash;
+                const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
                 try {
                     await connection.execute(
@@ -101,7 +101,7 @@ async function listenToEvents() {
                 console.log(
                     `Event: withdrawalRight - Address: ${addressRight}, Contract: ${addressThisMusicContract}, Percentage: ${percentageOfRights}`
                 );
-                const transactionHash = event.log.transactionHash;
+                const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
                 try {
                     await connection.execute(
@@ -123,7 +123,7 @@ async function listenToEvents() {
         // Listener para musicWithSealedRights (MusicContract)
         musicContractInstance.on('musicWithSealedRights', async (addressThisMusicContract, musicContactIsSealed, event) => {
             console.log(`Event: musicWithSealedRights - Contract: ${addressThisMusicContract}, Sealed: ${musicContactIsSealed}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
@@ -139,7 +139,7 @@ async function listenToEvents() {
         // Listener para tokenAssigned (MusicContract)
         musicContractInstance.on('tokenAssigned', async (addressHolderToken, amountToken, event) => {
             console.log(`Event: tokenAssigned - Address: ${addressHolderToken}, Amount: ${amountToken}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
@@ -155,7 +155,7 @@ async function listenToEvents() {
         // Listener para purchaseMade (MusicContract)
         musicContractInstance.on('purchaseMade', async (purchaseAddress, activated, event) => {
             console.log(`Event: purchaseMade - Address: ${purchaseAddress}, Activated: ${activated}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
@@ -171,7 +171,7 @@ async function listenToEvents() {
         // Listener para musicHeard (MusicContract)
         musicContractInstance.on('musicHeard', async (hearAddress, confirm, event) => {
             console.log(`Event: musicHeard - Address: ${hearAddress}, Confirm: ${confirm}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
@@ -187,11 +187,11 @@ async function listenToEvents() {
          // Listener para WeiRefunded (MusicContract)
          oysterTokenInstance.on('WeiRefunded', async (to, weiAmount, event) => {
             console.log(`Event: WeiRefunded - Address: ${to}, Amount: ${weiAmount}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
-                    'INSERT INTO WeiRefunded (`to`, weiAmount, transactionHash) VALUES (?, ?, ?)',
+                    'INSERT INTO WeiRefunded (`to`, weiAmount, transactionHash) VALUES (?, ?, ?)', // Usando backticks para `to`
                     [to, weiAmount, transactionHash]
                 );
                 console.log('WeiRefunded event data inserted into database!');
@@ -203,11 +203,11 @@ async function listenToEvents() {
         // Listener para transferViaTokenSale (MusicContract)
         oysterTokenInstance.on('transferViaTokenSale', async (to, weiAmount, event) => {
             console.log(`Event: transferViaTokenSale - Address: ${to}, Amount: ${weiAmount}`);
-            const transactionHash = event.log.transactionHash;
+            const transactionHash = event.log.transactionHash; // Acessando o transactionHash em event.log
 
             try {
                 await connection.execute(
-                    'INSERT INTO transferViaTokenSale (`to`, weiAmount, transactionHash) VALUES (?, ?, ?)',
+                    'INSERT INTO transferViaTokenSale (`to`, weiAmount, transactionHash) VALUES (?, ?, ?)', // Usando backticks para `to`
                     [to, weiAmount, transactionHash]
                 );
                 console.log('transferViaTokenSale event data inserted into database!');
