@@ -21,7 +21,10 @@ async function initializeBlockchainService() {
     const oysterVaultAddress = deployData.oysterVault.address;
     const oysterVaultABI = JSON.parse(fs.readFileSync('./artifacts/contracts/OysterToken.sol/OysterVault.json', 'utf8')).abi;
 
-    wallet = (await hre.ethers.getSigners())[0];
+    // Obter a carteira (signer) diretamente do provedor
+    const accounts = await provider.listAccounts();
+    wallet = provider.getSigner(accounts[0]); // Pega a primeira conta disponível
+
     console.log("Wallet Address:", await wallet.getAddress());
 
     oysterTokenInstance = new ethers.Contract(
@@ -140,7 +143,7 @@ async function buy100OysterToken() {
     try {
         const result = await musicContractInstance.buy100OysterToken({
             value: weiValue.toString(),
-            gasLimit: 300000 
+            gasLimit: 300000
         });
 
         await result.wait();
@@ -192,7 +195,7 @@ async function isMusicContractSealed() {
         throw new Error('Music contract not initialized.');
     }
     try {
-        const result = await musicContractInstance.musicContactIsSealed.staticCall();
+        const result = await musicContractInstance.musicContactIsSealed();
         console.log("===== isMusicContractSealed END =====", result);
         return result;
     } catch (error) {
@@ -207,7 +210,7 @@ async function getTokensPerAddress(address) {
         throw new Error('Music contract not initialized.');
     }
     try {
-        const result = await musicContractInstance.tokensPerAddress.staticCall(address);
+        const result = await musicContractInstance.tokensPerAddress(address);
         console.log("===== getTokensPerAddress END =====", result);
         return result;
     } catch (error) {
