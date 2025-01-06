@@ -1,8 +1,8 @@
 import { ethers } from 'ethers';
-import OysterTokenABI from '@backend/artifacts/contracts/OysterToken.sol/OysterToken.json';
-import MusicContractABI from '@backend/artifacts/contracts/MusicContract.sol/MusicContract.json';
-import OysterVaultABI from '@backend/artifacts/contracts/OysterToken.sol/OysterVault.json';
-import deployData from '../../../backend/mermaid-NFT/backend/artifacts/contracts/deploy-data.json';
+import OysterTokenABI from '../../../backend/artifacts/contracts/OysterToken.sol/OysterToken.json';
+import MusicContractABI from '../../../backend/artifacts/contracts/MusicContract.sol/MusicContract.json';
+import OysterVaultABI from '../../../backend/artifacts/contracts/OysterToken.sol/OysterVault.json';
+import deployData from '../../../backend/deploy-data.json';
 
 // Conectando ao provedor local do Hardhat
 const provider = new ethers.JsonRpcProvider(
