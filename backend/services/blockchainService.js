@@ -149,7 +149,7 @@ async function buy100OysterToken() {
     const businessRateWei = ethers.parseUnits(process.env.BUSINESS_RATE_WEI, "gwei");
     const tokensToBuy = 100;
     const gweiPerToken = ethers.parseUnits(process.env.GWEI_PER_TOKEN, "gwei");
-    const weiValue = tokensToBuy * gweiPerToken + businessRateWei;
+    const weiValue = BigInt(tokensToBuy) * gweiPerToken + businessRateWei;
 
     try {
         const result = await musicContractInstance.buy100OysterToken({
