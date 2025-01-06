@@ -54,13 +54,20 @@ contract OysterToken is ERC20, Ownable, ERC20Permit {
         }
         require(codeSize > 0, "Address is not a contract");
 
-        // Chama a função getContractType() do MusicContract usando o seletor
+        // Tenta chamar a função getContractType() do MusicContract usando o seletor
         (bool success, bytes memory result) = addressMusicContract.staticcall(
             abi.encodeWithSelector(bytes4(keccak256("getContractType()")))
         );
 
         // Verifica se a chamada foi bem-sucedida e se o valor retornado é "MusicContract"
-        require(success && result.length > 0 && keccak256(result) == keccak256(abi.encodePacked("MusicContract")), "Not a valid MusicContract");
+        require(success, "Call to getContractType failed");
+
+        string memory contractType;
+        if (result.length > 0) {
+            contractType = abi.decode(result, (string));
+        }
+
+        require(keccak256(abi.encodePacked(contractType)) == keccak256(abi.encodePacked("MusicContract")), "Not a valid MusicContract");
 
         // Se a validação passar, marca o contrato como válido
         emit ValidatedMusicContract(addressMusicContract, true);

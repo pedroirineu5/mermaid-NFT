@@ -19,17 +19,23 @@ async function startApp() {
                 const result = await blockchainService.validateMusicContract(
                     addressMusicContract
                 );
-                res.send({
-                    message: 'Music contract validated!',
-                    transactionHash: result.hash,
-                    musicContractAddress: addressMusicContract,
-                });
+                if (result.isValid) {
+                    res.send({
+                        message: 'Music contract validated!',
+                        transactionHash: result.hash,
+                        musicContractAddress: addressMusicContract,
+                    });
+                } else {
+                    // Isso nunca deve acontecer, pois se a transação foi revertida, um erro deve ter sido lançado
+                    res.status(400).send({
+                        error: 'Music contract validation failed.',
+                        transactionHash: result.hash,
+                        musicContractAddress: addressMusicContract,
+                    });
+                }
             } catch (error) {
                 console.error(error);
-                res.status(500).send({
-                    error: `Error validating music contract: ${error.message}`,
-                    musicContractAddress: addressMusicContract
-                });
+                res.status(500).send(`Error validating music contract: ${error.message}`);
             }
         });
 

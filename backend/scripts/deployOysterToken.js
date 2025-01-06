@@ -82,7 +82,7 @@ async function main() {
     await authorizeMusicContractTx.wait();
     console.log("MusicContract address authorized in OysterVault contract");
 
-    // **Removida a chamada para validateMusicContracts**
+    // Removida a chamada para validateMusicContracts
 
     const deployData = {
         network: hre.network.name,
