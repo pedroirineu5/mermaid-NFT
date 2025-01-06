@@ -79,6 +79,7 @@ async function main() {
     );
     console.log("Deployment data saved to deploy-data.json");
 
+    // Atualiza o arquivo .env após a implantação
     await updateEnvFile(deployData);
     console.log(".env file updated by deploy script");
 }
