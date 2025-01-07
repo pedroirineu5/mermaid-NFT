@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const blockchainService = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
 const cors = require('cors');
@@ -11,12 +12,12 @@ const port = 3000;
 app.use(express.json());
 
 const corsOptions = {
-origin: "http://localhost:5173", // URL do seu frontend
-optionsSuccessStatus: 200, // Alguns navegadores antigos (IE11, várias versões do Android) engasgam no 204
+  origin: "http://localhost:5173",
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
-    
+
 
 async function startApp() {
     try {

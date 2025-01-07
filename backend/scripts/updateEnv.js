@@ -18,8 +18,8 @@ MUSIC_CONTRACT_ADDRESS=
 RIGHT_PURCHASE_VALUE_IN_GWEI=1000
 VALUE_FOR_LISTENING_IN_GWEI=100
 HARDHAT_PROVIDER_URL=http://127.0.0.1:8545
-BUSINESS_RATE_WEI=200000
-GWEI_PER_TOKEN=50000
+BUSINESS_RATE_WEI=200000000000000
+GWEI_PER_TOKEN=50000000000000
         `;
         fs.writeFileSync(envPath, defaultEnvContent.trim());
         console.log("Created .env file with default values.");
@@ -41,8 +41,8 @@ async function updateEnvFile(deployData) {
     envConfig.RIGHT_PURCHASE_VALUE_IN_GWEI = deployData.rightPurchaseValueInGwei;
     envConfig.VALUE_FOR_LISTENING_IN_GWEI = deployData.valueForListeningInGwei;
     envConfig.HARDHAT_PROVIDER_URL = "http://127.0.0.1:8545";
-    envConfig.BUSINESS_RATE_WEI = "200000";
-    envConfig.GWEI_PER_TOKEN = "50000";
+    envConfig.BUSINESS_RATE_WEI = "200000000000000";
+    envConfig.GWEI_PER_TOKEN = "50000000000000";
 
     // Mantém os valores de DB_USER, DB_PASSWORD e DB_DATABASE
     envConfig.DB_USER = envConfig.DB_USER || "mermaiduser";

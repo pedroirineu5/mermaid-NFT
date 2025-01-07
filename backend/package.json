@@ -19,7 +19,7 @@
     "copyright",
     "smart-contracts"
   ],
-  "author": "Seu Nome <seu.email@example.com>",
+  "author": "Gabriel Vasconcelos <dev.vitruvius@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
