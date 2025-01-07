@@ -385,6 +385,46 @@
         "Nonces"
       ]
     },
+    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\EIP712.sol": {
+      "lastModificationDate": 1736210721112,
+      "contentHash": "384d58ae33c09192252a48509baf6d44",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "./MessageHashUtils.sol",
+        "../ShortStrings.sol",
+        "../../interfaces/IERC5267.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "EIP712"
+      ]
+    },
     "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\ECDSA.sol": {
       "lastModificationDate": 1736210721111,
       "contentHash": "fd4dff497435057e9577d414432453cb",
@@ -455,46 +495,6 @@
       ],
       "artifacts": [
         "IERC20Permit"
-      ]
-    },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\EIP712.sol": {
-      "lastModificationDate": 1736210721112,
-      "contentHash": "384d58ae33c09192252a48509baf6d44",
-      "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "./MessageHashUtils.sol",
-        "../ShortStrings.sol",
-        "../../interfaces/IERC5267.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "EIP712"
       ]
     },
     "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\ShortStrings.sol": {

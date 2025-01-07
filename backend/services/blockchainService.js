@@ -146,15 +146,23 @@ async function buy100OysterToken() {
         throw new Error('Music contract not initialized.');
     }
 
-    const businessRateWei = ethers.parseUnits(process.env.BUSINESS_RATE_WEI, "gwei");
+    const businessRateWei = BigInt(process.env.BUSINESS_RATE_WEI);
     const tokensToBuy = 100;
-    const gweiPerToken = ethers.parseUnits(process.env.GWEI_PER_TOKEN, "gwei");
-    const weiValue = tokensToBuy * gweiPerToken + businessRateWei;
+    const gweiPerToken = BigInt(process.env.GWEI_PER_TOKEN);
+    
+    // Adicionando um padding de 0.00011 Ether (110000000000000 wei) para garantir que o valor seja suficiente
+    const padding = BigInt(110000000000000); 
+
+    const weiValue = BigInt(tokensToBuy) * gweiPerToken + businessRateWei + padding;
+
+    console.log("Business Rate (wei):", businessRateWei.toString());
+    console.log("Gwei per Token:", gweiPerToken.toString());
+    console.log("Wei Value to send:", weiValue.toString());
 
     try {
+        // Remover gasLimit para que o ethers.js calcule automaticamente
         const result = await musicContractInstance.buy100OysterToken({
-            value: weiValue.toString(),
-            gasLimit: 300000
+            value: weiValue
         });
 
         await result.wait();
