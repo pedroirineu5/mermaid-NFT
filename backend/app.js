@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const blockchainService = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
+const cors = require('cors');
 
 require('dotenv').config();
 
@@ -16,6 +17,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+
 
 async function startApp() {
     try {
@@ -59,7 +61,6 @@ async function startApp() {
                         error: `Music contract already sealed`
                     });
                 }
-
                 const transactionHash = await blockchainService.assignRights(addressRight, percentageOfRights);
                 res.send(`Music rights assigned! Transaction hash: ${transactionHash}`);
             } catch (error) {
