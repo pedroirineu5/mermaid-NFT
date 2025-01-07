@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const blockchainService = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
 
@@ -8,6 +9,14 @@ const app = express();
 const port = 3000;
 
 app.use(express.json());
+
+// Configuração do CORS
+const corsOptions = {
+  origin: "http://localhost:5173", // URL do seu frontend (porta padrão do Vite)
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 async function startApp() {
     try {
