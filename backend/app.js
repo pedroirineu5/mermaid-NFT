@@ -10,9 +10,8 @@ const port = 3000;
 
 app.use(express.json());
 
-// Configuração do CORS
 const corsOptions = {
-  origin: "http://localhost:5173", // URL do seu frontend (porta padrão do Vite)
+  origin: "http://localhost:5173",
   optionsSuccessStatus: 200,
 };
 
