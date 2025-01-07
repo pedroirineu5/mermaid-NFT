@@ -24,8 +24,6 @@ function MusicPage() {
     }
   }
 
-  
-
   return (
     <>
       <div className="w-screen h-screen bg-[#1B2B40] flex flex-col items-center justify-between ">

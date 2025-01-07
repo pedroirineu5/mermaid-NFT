@@ -1,3 +1,4 @@
+import {assignRights} from '../services/api';
 import {AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -28,15 +29,34 @@ function CriarMusicPage(){
 
     const [direitos, setDireitos] = useState<{ carteira: string, porcentagem: string, atividade: string }[]>([]);
 
-    const handleAdicionarDireitos = (event: React.FormEvent<HTMLFormElement>) => {
+    const handleAdicionarDireitos = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const carteira = formData.get('carteira') as string;
-        const porcentagem = formData.get('porcentagem') as string;
-        const atividade = formData.get('atividade') as string;
-
-        setDireitos([...direitos, { carteira, porcentagem, atividade }]);
-    };
+        const carteira = formData.get("carteira") as string;
+        const porcentagem = formData.get("porcentagem") as string;
+        const atividade = formData.get("atividade") as string;
+    
+        try {
+          const response = await assignRights({
+            addressRight: carteira,
+            percentageOfRights: Number(porcentagem),
+          });
+    
+          setDireitos([
+            ...direitos,
+            { carteira, porcentagem, atividade },
+          ]);
+    
+          console.log("Direitos adicionados com sucesso:", response);
+          alert(`Success: ${response.message}, Tx Hash: ${response.transactionHash}`);
+    
+          event.currentTarget.reset();
+    
+        } catch (error) {
+          console.error("Erro ao adicionar direitos:", error);
+          alert(`Error: ${error}`);
+        }
+      };
 
     const handleRemoverDireitos = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -110,7 +130,7 @@ function CriarMusicPage(){
                     </DialogContent>
                 </Dialog>
                 
-
+                
                 <Dialog>
                 <DialogTrigger asChild>
                     <Button variant="outline" size='lg' className="bg-[#bf5934] text-white">Remover Direitos</Button>
@@ -163,13 +183,16 @@ function CriarMusicPage(){
 
                     
                 </div>
+                      
                 <div className="mt-4 flex-grow ml-8">
-                    {direitos.map((direito: { carteira: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; porcentagem: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; atividade: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; }, index: Key | null | undefined) => (
-                        <p key={index} className="text-white">
-                           {direito.carteira}, {direito.porcentagem}, {direito.atividade}
+                    {direitos.map((direito) => (
+                        <p key={direito.carteira} className="text-white">
+                        {direito.carteira}, {direito.porcentagem}, {direito.atividade}
                         </p>
                     ))}
                 </div>
+
+    
             </div>
   
         </div>
