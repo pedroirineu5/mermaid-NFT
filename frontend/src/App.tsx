@@ -5,43 +5,43 @@ function App() {
 
   const navigate = useNavigate();
 
-  async function getRightHolders() {
-    try {
-      const response = await fetch('http://localhost:3000/right-holders'); // URL da rota do seu backend
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Right Holders:', data);
-      // ... faça algo com os dados recebidos ...
-    } catch (error) {
-      console.error('Error fetching right holders:', error);
-    }
-  }
+  // async function getRightHolders() {
+  //   try {
+  //     const response = await fetch('http://localhost:3000/right-holders'); // URL da rota do seu backend
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     console.log('Right Holders:', data);
+  //     // ... faça algo com os dados recebidos ...
+  //   } catch (error) {
+  //     console.error('Error fetching right holders:', error);
+  //   }
+  // }
   
-  async function assignRights(address: string, percentage: number) {
-    try {
-      const response = await fetch('http://localhost:3000/assign-music-rights', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ address, percentage })
-      });
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Response:', data);
-      // ... faça algo com os dados recebidos ...
-    } catch (error) {
-      console.error('Error assigning rights:', error);
-    }
-  }
+  // async function assignRights(address: string, percentage: number) {
+  //   try {
+  //     const response = await fetch('http://localhost:3000/assign-music-rights', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json'
+  //       },
+  //       body: JSON.stringify({ address, percentage })
+  //     });
+  //     if (!response.ok) {
+  //       throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  //     const data = await response.json();
+  //     console.log('Response:', data);
+  //     // ... faça algo com os dados recebidos ...
+  //   } catch (error) {
+  //     console.error('Error assigning rights:', error);
+  //   }
+  // }
   
-  // Exemplo de chamada das funções
-  getRightHolders();
-  assignRights("0xEndereço", 25);
+  // // Exemplo de chamada das funções
+  // getRightHolders();
+  // assignRights("0xEndereço", 25);
 
   function viewMusic(){
     navigate("/music");

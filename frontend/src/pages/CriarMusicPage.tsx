@@ -1,4 +1,4 @@
-import {assignRights} from '../services/api';
+import {assignRights, getRemainingRights, withdrawRights, sealMusicContract} from '../services/api';
 import {AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -21,13 +21,15 @@ import {
     DialogTrigger,
     DialogFooter,
   } from "@/components/ui/dialog";
-import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key } from "react";
+import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key, useEffect } from "react";
 import { useState } from "react";
   
 
 function CriarMusicPage(){
 
     const [direitos, setDireitos] = useState<{ carteira: string, porcentagem: string, atividade: string }[]>([]);
+    const [remainingRights, setRemainingRights] = useState<string>("");
+    const [isContractSealed, setIsContractSealed] = useState(false)
 
     const handleAdicionarDireitos = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -58,22 +60,66 @@ function CriarMusicPage(){
         }
       };
 
-    const handleRemoverDireitos = (event: React.FormEvent<HTMLFormElement>) => {
+
+      useEffect(() => {
+        const fetchData = async () => {
+          try {
+            const remainingRightsData = await getRemainingRights();
+            setRemainingRights(remainingRightsData.remainingRights);
+    
+          } catch (error) {
+            console.error("Erro ao buscar dados:", error);
+          }
+        };
+    
+        fetchData();
+      }, []); 
+
+      const handleRemoverDireitos = async (
+        event: React.FormEvent<HTMLFormElement>
+      ) => {
         event.preventDefault();
         const formData = new FormData(event.currentTarget);
-        const carteira = formData.get('carteira') as string;
-        const porcentagem = formData.get('Porcentagem') as string;
+        const carteira = formData.get("carteira") as string;
+        const porcentagem = formData.get("Porcentagem") as string; 
     
-        setDireitos(direitos.map(direito => {
-            if (direito.carteira === carteira) {
-                return {
-                    ...direito,
-                    porcentagem: (parseFloat(direito.porcentagem) - parseFloat(porcentagem)).toString()
-                };
-            }
-            return direito;
-        }).filter(direito => parseFloat(direito.porcentagem) > 0));
-    };
+        try {
+          const response = await withdrawRights({
+            addressRight: carteira,
+            percentageOfRights: Number(porcentagem),
+          });
+    
+          setDireitos(
+            direitos.filter((direito) => direito.carteira !== carteira)
+          );
+    
+          console.log("Direitos removidos com sucesso:", response);
+          alert(
+            `Success: ${response.message}, Tx Hash: ${response.transactionHash}`
+          );
+    
+          event.currentTarget.reset();
+        } catch (error) {
+          console.error("Erro ao remover direitos:", error);
+          alert(`Error: ${error}`);
+        }
+      };
+
+      const handleSealContract = async () => {
+        try {
+          const response = await sealMusicContract({});
+          console.log(response.message);
+          alert(
+            `Success: ${response.message}, Tx Hash: ${response.transactionHash}`
+          );
+    
+          // Atualizar o estado para indicar que o contrato foi selado
+          setIsContractSealed(true);
+        } catch (error) {
+          console.error("Erro ao selar o contrato:", error);
+          alert(`Error: ${error}`);
+        }
+      };
     
 
     return (
@@ -85,6 +131,8 @@ function CriarMusicPage(){
             <span>Voltar</span>
           </div>
       </header>
+
+
         <h1 className="text-white text-6xl font-bold"> Criar Direitos</h1>
         <div className="rounded-3xl w-[60vw] h-[60vh] bg-slate-700 flex flex-col items justify-between">
             
@@ -164,22 +212,33 @@ function CriarMusicPage(){
                 </DialogContent>
                 </Dialog>
                 
-                <AlertDialog >
-                    <AlertDialogTrigger><Button variant='outline' size='lg' className="bg-[#bf5934] text-white">Selar Contrato</Button></AlertDialogTrigger>
+                <AlertDialog>
+                    <AlertDialogTrigger>
+                        <Button
+                        variant="outline"
+                        size="lg"
+                        className="bg-[#bf5934] text-white"
+                        disabled={isContractSealed} // Desabilitar o botão se o contrato já estiver selado
+                        >
+                        Selar Contrato
+                        </Button>
+                    </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Esta ação não pode ser desfeita depois de confimada.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
+                                <AlertDialogDescription>
+                                    Esta ação não pode ser desfeita depois de confirmada.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
 
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction className="text-white">Continuar</AlertDialogAction>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction className="text-white" onClick={handleSealContract}>
+                                Continuar
+                            </AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
-                </AlertDialog>
+                    </AlertDialog>
 
                     
                 </div>
@@ -193,6 +252,11 @@ function CriarMusicPage(){
                 </div>
 
     
+            </div>
+            <div className="w-full text-center mt-4">
+                <p className="text-white">
+                    Direitos Restantes: {remainingRights}%
+                </p>
             </div>
   
         </div>
