@@ -1,23 +1,21 @@
 const { ethers } = require('ethers');
 const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 require('dotenv').config();
 
 const provider = new ethers.JsonRpcProvider(process.env.HARDHAT_PROVIDER_URL);
 
 let oysterTokenInstance;
-let musicContractInstance;
 let oysterVaultInstance;
 let wallet;
 
 async function initializeBlockchainService() {
     console.log("===== Initializing Blockchain Service =====");
 
-    // Check for the existence of deploy-data.json
     if (!fs.existsSync('deploy-data.json')) {
         throw new Error("deploy-data.json file not found. Please run the deployment script before starting the backend.");
     }
 
-    // Check for the validity of deploy-data.json
     let deployData;
     try {
         deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
@@ -28,13 +26,11 @@ async function initializeBlockchainService() {
 
     const oysterTokenAddress = deployData.oysterToken.address;
     const oysterTokenABI = deployData.oysterToken.abi;
-    const musicContractAddress = deployData.musicContract.address;
     const musicContractABI = deployData.musicContract.abi;
     const oysterVaultAddress = deployData.oysterVault.address;
     const oysterVaultABI = deployData.oysterVault.abi;
 
-    // Obter a carteira (signer) diretamente do provedor
-    wallet = await provider.getSigner(0); // Pega a primeira conta disponível
+    wallet = await provider.getSigner(0);
 
     console.log("Wallet Address:", await wallet.getAddress());
 
@@ -44,13 +40,6 @@ async function initializeBlockchainService() {
         wallet
     );
     console.log("oysterTokenInstance Address:", oysterTokenInstance.target);
-
-    musicContractInstance = new ethers.Contract(
-        musicContractAddress,
-        musicContractABI,
-        wallet
-    );
-    console.log("musicContractInstance Address:", musicContractInstance.target);
 
     oysterVaultInstance = new ethers.Contract(
         oysterVaultAddress,
@@ -63,7 +52,7 @@ async function initializeBlockchainService() {
 }
 
 async function validateMusicContract(addressMusicContract) {
-    console.log("===== Validating Music Contract =====");
+    console.log("===== Validating Music Contract ======");
     console.log("Validating Music Contract Address (input):", addressMusicContract);
     if (!oysterTokenInstance) {
         throw new Error('Blockchain service not initialized.');
@@ -84,8 +73,8 @@ async function validateMusicContract(addressMusicContract) {
         }
 
         console.log("Transaction Hash:", tx.hash);
-        console.log("===== Music Contract Validated =====");
-        return { hash: tx.hash, isValid: true };
+        console.log("===== Music Contract Validated ======");
+        return true;
     } catch (error) {
         console.error("Error during validateMusicContract:", error);
         throw error;
@@ -149,9 +138,8 @@ async function buy100OysterToken() {
     const businessRateWei = BigInt(process.env.BUSINESS_RATE_WEI);
     const tokensToBuy = 100;
     const gweiPerToken = BigInt(process.env.GWEI_PER_TOKEN);
-    
-    // Adicionando um padding de 0.00011 Ether (110000000000000 wei) para garantir que o valor seja suficiente
-    const padding = BigInt(110000000000000); 
+
+    const padding = BigInt(110000000000000);
 
     const weiValue = BigInt(tokensToBuy) * gweiPerToken + businessRateWei + padding;
 
@@ -160,7 +148,6 @@ async function buy100OysterToken() {
     console.log("Wei Value to send:", weiValue.toString());
 
     try {
-        // Remover gasLimit para que o ethers.js calcule automaticamente
         const result = await musicContractInstance.buy100OysterToken({
             value: weiValue
         });
@@ -308,6 +295,76 @@ async function viewBalance() {
     }
 }
 
+async function getAllMusics() {
+    console.log("===== Getting All Musics =====");
+    const musicContracts = [];
+    
+    // Implementar lógica para buscar todos os contratos de música
+    
+    return musicContracts;
+}
+
+async function getMusicsByProducer(producerAddress) {
+    console.log(`===== Getting Musics By Producer: ${producerAddress} =====`);
+    const musics = [];
+
+    // Implementar lógica para buscar músicas por produtor
+  
+    return musics;
+}
+
+async function getMusicById(id) {
+    console.log(`===== Getting Music By ID: ${id} =====`);
+    let music;
+
+    // Implementar lógica para buscar música por ID
+  
+    return music;
+}
+
+async function createMusic(musicData) {
+    console.log("===== Creating Music =====");
+    const { title, artist, producer, metadata, duration } = musicData;
+
+    const musicContractFactory = new ethers.ContractFactory(
+        deployData.musicContract.abi,
+        deployData.musicContract.bytecode,
+        wallet
+    );
+
+    const rightPurchaseValueInGwei = BigInt(process.env.RIGHT_PURCHASE_VALUE_IN_GWEI);
+    const valueForListeningInGwei = BigInt(process.env.VALUE_FOR_LISTENING_IN_GWEI);
+
+    const musicContract = await musicContractFactory.deploy(
+        oysterTokenInstance.target,
+        oysterVaultInstance.target,
+        rightPurchaseValueInGwei,
+        valueForListeningInGwei
+    );
+
+    await musicContract.waitForDeployment();
+
+    const musicContractAddress = await musicContract.getAddress();
+
+    const musicId = uuidv4();
+
+    // Implementar lógica para salvar dados adicionais da música
+
+    return musicContractAddress;
+}
+
+async function getAccountBalance(address) {
+    console.log(`===== Getting Account Balance for ${address} =====`);
+    try {
+        const balance = await provider.getBalance(address);
+        console.log(`===== Balance for ${address}: ${balance.toString()} =====`);
+        return balance;
+    } catch (error) {
+        console.error(`Error fetching balance for address ${address}:`, error);
+        throw error;
+    }
+}
+
 module.exports = {
     initializeBlockchainService,
     validateMusicContract,
@@ -322,5 +379,10 @@ module.exports = {
     getSignerAddress,
     buyRightsMusic,
     listenMusic,
-    viewBalance
+    viewBalance,
+    getAllMusics,
+    getMusicsByProducer,
+    getMusicById,
+    createMusic,
+    getAccountBalance
 };

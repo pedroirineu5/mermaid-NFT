@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const blockchainService = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
-const cors = require('cors');
 
 require('dotenv').config();
 
@@ -18,7 +17,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-
 async function startApp() {
     try {
         await blockchainService.initializeBlockchainService();
@@ -29,19 +27,17 @@ async function startApp() {
         app.post('/validate-music-contract', async (req, res) => {
             const { addressMusicContract } = req.body;
             try {
-                const result = await blockchainService.validateMusicContract(
+                const isValid = await blockchainService.validateMusicContract(
                     addressMusicContract
                 );
-                if (result.isValid) {
+                if (isValid) {
                     res.send({
                         message: 'Music contract validated!',
-                        transactionHash: result.hash,
                         musicContractAddress: addressMusicContract,
                     });
                 } else {
                     res.status(400).send({
                         error: 'Music contract validation failed.',
-                        transactionHash: result.hash,
                         musicContractAddress: addressMusicContract,
                     });
                 }
@@ -227,6 +223,60 @@ async function startApp() {
             } catch (error) {
                 console.error(error);
                 res.status(500).send(`Error checking balance: ${error.message}`);
+            }
+        });
+
+        app.get('/musics', async (req, res) => {
+            try {
+                const musics = await blockchainService.getAllMusics();
+                res.json(musics);
+            } catch (error) {
+                console.error('Error fetching all musics:', error);
+                res.status(500).send(`Error fetching all musics: ${error.message}`);
+            }
+        });
+
+        app.get('/musics', async (req, res) => {
+            const producerAddress = req.query.producer;
+            try {
+                const musics = await blockchainService.getMusicsByProducer(producerAddress);
+                res.json(musics);
+            } catch (error) {
+                console.error(`Error fetching musics by producer ${producerAddress}:`, error);
+                res.status(500).send(`Error fetching musics by producer ${producerAddress}: ${error.message}`);
+            }
+        });
+
+        app.get('/music/:id', async (req, res) => {
+            const { id } = req.params;
+            try {
+                const music = await blockchainService.getMusicById(id);
+                res.json(music);
+            } catch (error) {
+                console.error(`Error fetching music with ID ${id}:`, error);
+                res.status(500).send(`Error fetching music with ID ${id}: ${error.message}`);
+            }
+        });
+
+        app.post('/music', async (req, res) => {
+            const musicData = req.body;
+            try {
+                const transactionHash = await blockchainService.createMusic(musicData);
+                res.status(201).send({ message: 'Music created successfully!', transactionHash });
+            } catch (error) {
+                console.error('Error creating music:', error);
+                res.status(500).send(`Error creating music: ${error.message}`);
+            }
+        });
+
+        app.get('/balance/:address', async (req, res) => {
+            const { address } = req.params;
+            try {
+                const balance = await blockchainService.getAccountBalance(address);
+                res.json({ balance });
+            } catch (error) {
+                console.error(`Error fetching balance for address ${address}:`, error);
+                res.status(500).send(`Error fetching balance for address ${address}: ${error.message}`);
             }
         });
 
