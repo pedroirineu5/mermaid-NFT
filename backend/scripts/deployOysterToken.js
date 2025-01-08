@@ -54,9 +54,16 @@ async function main() {
     );
     await musicContract.waitForDeployment();
     const musicContractAddress = await musicContract.getAddress();
+
+    // Ler o bytecode do arquivo de artefatos
+    const musicContractArtifactPath = path.join(__dirname, "../artifacts/contracts/MusicContract.sol/MusicContract.json");
+    const musicContractArtifact = JSON.parse(fs.readFileSync(musicContractArtifactPath, "utf-8"));
+    const musicContractBytecode = musicContractArtifact.bytecode;
+
     console.log("MusicContract deployed to:", musicContractAddress);
 
-    const validateMusicContractTx = await oysterToken.validateMusicContracts(musicContractAddress);
+    const validateMusicContractTx =
+        await oysterToken.validateMusicContracts(musicContractAddress);
     await validateMusicContractTx.wait();
     console.log("MusicContract address validated in OysterToken contract");
 
@@ -64,18 +71,19 @@ async function main() {
         network: hre.network.name,
         oysterToken: {
             address: oysterTokenAddress,
-            abi: oysterToken.interface.format("json"),
+            abi: JSON.parse(oysterToken.interface.formatJson()),
         },
         oysterVault: {
             address: oysterVaultAddress,
-            abi: oysterVault.interface.format("json"),
+            abi: JSON.parse(oysterVault.interface.formatJson()),
         },
         musicContract: {
             address: musicContractAddress,
-            abi: musicContract.interface.format("json"),
+            abi: JSON.parse(musicContract.interface.formatJson()),
+            bytecode: musicContractBytecode, // Usando o bytecode do arquivo de artefatos
         },
         rightPurchaseValueInGwei: rightPurchaseValueInGwei,
-        valueForListeningInGwei: valueForListeningInGwei
+        valueForListeningInGwei: valueForListeningInGwei,
     };
 
     fs.writeFileSync(
