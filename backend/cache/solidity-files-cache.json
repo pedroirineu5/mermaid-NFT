@@ -2,9 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/devitruvius/Projects/mermaid-NFT/backend/contracts/MusicContract.sol": {
-      "lastModificationDate": 1736201950669,
-      "contentHash": "80869dbf6ca49f7ea3dae7bec7afdaf8",
-
+      "lastModificationDate": 1736283987307,
+      "contentHash": "5c360fef4ae1785d92733f2814084293",
       "sourceName": "contracts/MusicContract.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -31,7 +30,10 @@
         }
       },
       "imports": [
-        "contracts/OysterToken.sol"
+        "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
+        "./OysterToken.sol"
       ],
       "versionPragmas": [
         "0.8.28"
@@ -40,11 +42,9 @@
         "MusicContract"
       ]
     },
-
     "/home/devitruvius/Projects/mermaid-NFT/backend/contracts/OysterToken.sol": {
-      "lastModificationDate": 1736201952166,
+      "lastModificationDate": 1736273505490,
       "contentHash": "9e8ca15d6e6faa94269ec7e18c29f765",
-
       "sourceName": "contracts/OysterToken.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -83,9 +83,9 @@
         "OysterVault"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\access\\Ownable.sol": {
-      "lastModificationDate": 1736210720990,
-      "contentHash": "f665fc4a91af3170f86727fc49cc091f",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/access/Ownable.sol": {
+      "lastModificationDate": 1736273506313,
+      "contentHash": "d3c790edc9ccf808a17c5a6cd13614fd",
       "sourceName": "@openzeppelin/contracts/access/Ownable.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -121,9 +121,9 @@
         "Ownable"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\ERC20.sol": {
-      "lastModificationDate": 1736210721088,
-      "contentHash": "9ef0340c0f80c809e579986412aebb54",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/token/ERC20/ERC20.sol": {
+      "lastModificationDate": 1736273506324,
+      "contentHash": "38910c3dfa5e3778fac8888b1d714084",
       "sourceName": "@openzeppelin/contracts/token/ERC20/ERC20.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -162,9 +162,9 @@
         "ERC20"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\ERC20Permit.sol": {
-      "lastModificationDate": 1736210721091,
-      "contentHash": "a94cd037e0bba6467b1d35ad73578ac9",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol": {
+      "lastModificationDate": 1736273506324,
+      "contentHash": "b1a8fc63b83ce00408e0c9ed1230b717",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -204,9 +204,9 @@
         "ERC20Permit"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\Context.sol": {
-      "lastModificationDate": 1736210721105,
-      "contentHash": "2783b901218e982baedae531a748ed8d",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -240,9 +240,9 @@
         "Context"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\interfaces\\draft-IERC6093.sol": {
-      "lastModificationDate": 1736210721078,
-      "contentHash": "1d1602f392ece4ad9d8619d8330cf62a",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/interfaces/draft-IERC6093.sol": {
+      "lastModificationDate": 1736273506322,
+      "contentHash": "267d92fe4de67b1bdb3302c08f387dbf",
       "sourceName": "@openzeppelin/contracts/interfaces/draft-IERC6093.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -278,9 +278,9 @@
         "IERC721Errors"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\IERC20.sol": {
-      "lastModificationDate": 1736210721088,
-      "contentHash": "778af47480c13b77b1966a07ff4b6bd6",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/token/ERC20/IERC20.sol": {
+      "lastModificationDate": 1736273506324,
+      "contentHash": "8f19f64d2adadf448840908bbaf431c8",
       "sourceName": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -314,9 +314,9 @@
         "IERC20"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Metadata.sol": {
-      "lastModificationDate": 1736210721093,
-      "contentHash": "f2b8a04309de70068525c84e8ff0de09",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol": {
+      "lastModificationDate": 1736273506324,
+      "contentHash": "794db3115001aa372c79326fcfd44b1f",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -352,9 +352,9 @@
         "IERC20Metadata"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\Nonces.sol": {
-      "lastModificationDate": 1736210721107,
-      "contentHash": "dc8cb39ef6e27c823db858406c6c52fd",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/Nonces.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "c32d108058718efb9061b88e83a83f79",
       "sourceName": "@openzeppelin/contracts/utils/Nonces.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -388,9 +388,45 @@
         "Nonces"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\EIP712.sol": {
-      "lastModificationDate": 1736210721112,
-      "contentHash": "384d58ae33c09192252a48509baf6d44",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/cryptography/ECDSA.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "81de029d56aa803972be03c5d277cb6c",
+      "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "paris",
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ECDSA"
+      ]
+    },
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/cryptography/EIP712.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "8dbb261c55f358342798c4d1803d4f8e",
       "sourceName": "@openzeppelin/contracts/utils/cryptography/EIP712.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -428,45 +464,9 @@
         "EIP712"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\ECDSA.sol": {
-      "lastModificationDate": 1736210721111,
-      "contentHash": "fd4dff497435057e9577d414432453cb",
-      "sourceName": "@openzeppelin/contracts/utils/cryptography/ECDSA.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "ECDSA"
-      ]
-    },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\token\\ERC20\\extensions\\IERC20Permit.sol": {
-      "lastModificationDate": 1736210721094,
-      "contentHash": "59eccb18140c9b3ddfb47bd542360c11",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol": {
+      "lastModificationDate": 1736273506324,
+      "contentHash": "94ec15baf0d5df863f45b8f351937ec7",
       "sourceName": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -500,9 +500,9 @@
         "IERC20Permit"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\ShortStrings.sol": {
-      "lastModificationDate": 1736210721109,
-      "contentHash": "cb6a33b6ef7de95268fbfa33313f0339",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/ShortStrings.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "94e7feaf138d08fb736e43ca0be9bf26",
       "sourceName": "@openzeppelin/contracts/utils/ShortStrings.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -538,9 +538,9 @@
         "ShortStrings"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\interfaces\\IERC5267.sol": {
-      "lastModificationDate": 1736210721073,
-      "contentHash": "47eae3ec86b4c24179f73325e277e791",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/interfaces/IERC5267.sol": {
+      "lastModificationDate": 1736273506322,
+      "contentHash": "94364524cb1a39dcbc3d3afff6d8e53e",
       "sourceName": "@openzeppelin/contracts/interfaces/IERC5267.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -574,9 +574,9 @@
         "IERC5267"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\cryptography\\MessageHashUtils.sol": {
-      "lastModificationDate": 1736210721113,
-      "contentHash": "ac4249b22679957d3a2edd73b5f74c3c",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol": {
+      "lastModificationDate": 1736273506327,
+      "contentHash": "86fd93657e4e27ff76c38699e9b9fcef",
       "sourceName": "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -612,9 +612,9 @@
         "MessageHashUtils"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\StorageSlot.sol": {
-      "lastModificationDate": 1736210721110,
-      "contentHash": "c6edb541dfe1cc6e1604dae14d0c57aa",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/StorageSlot.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "e656d64c4ce918f3d13030b91c935134",
       "sourceName": "@openzeppelin/contracts/utils/StorageSlot.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -648,9 +648,9 @@
         "StorageSlot"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\Strings.sol": {
-      "lastModificationDate": 1736210721110,
-      "contentHash": "78bffc3dd12e9c1975243fcc8e862304",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/Strings.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "f4cc092958a3ddec1f4ed4103bfc54dd",
       "sourceName": "@openzeppelin/contracts/utils/Strings.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -687,9 +687,9 @@
         "Strings"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\math\\Math.sol": {
-      "lastModificationDate": 1736210721116,
-      "contentHash": "0b34c366bc65a520a1276268b7843013",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/math/Math.sol": {
+      "lastModificationDate": 1736273506327,
+      "contentHash": "2b2665ae9bdb1af440658741a77fe213",
       "sourceName": "@openzeppelin/contracts/utils/math/Math.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -726,9 +726,9 @@
         "Math"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SignedMath.sol": {
-      "lastModificationDate": 1736210721117,
-      "contentHash": "e5a40b88593f114ca4606065b530c54d",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/math/SignedMath.sol": {
+      "lastModificationDate": 1736273506327,
+      "contentHash": "ae3528afb8bdb0a7dcfba5b115ee8074",
       "sourceName": "@openzeppelin/contracts/utils/math/SignedMath.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -764,9 +764,9 @@
         "SignedMath"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\Panic.sol": {
-      "lastModificationDate": 1736210721107,
-      "contentHash": "d48fd42f5fe53f9221e19b61f6b64cac",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/Panic.sol": {
+      "lastModificationDate": 1736273506326,
+      "contentHash": "2133dc13536b4a6a98131e431fac59e1",
       "sourceName": "@openzeppelin/contracts/utils/Panic.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -800,9 +800,9 @@
         "Panic"
       ]
     },
-    "C:\\mermaid-NFT\\backend\\node_modules\\@openzeppelin\\contracts\\utils\\math\\SafeCast.sol": {
-      "lastModificationDate": 1736210721116,
-      "contentHash": "07fca9817b35d0302b609d5bf32aac50",
+    "/home/devitruvius/Projects/mermaid-NFT/backend/node_modules/@openzeppelin/contracts/utils/math/SafeCast.sol": {
+      "lastModificationDate": 1736273506327,
+      "contentHash": "2adca1150f58fc6f3d1f0a0f22ee7cca",
       "sourceName": "@openzeppelin/contracts/utils/math/SafeCast.sol",
       "solcConfig": {
         "version": "0.8.28",
