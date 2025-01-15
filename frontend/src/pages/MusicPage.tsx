@@ -32,10 +32,10 @@ function MusicPage() {
       }
 
       const data = await response.text(); // Receber como texto primeiro
-      alert(data); // Exibir a mensagem de sucesso
+      console.log(data)
     } catch (error) {
       console.error('Error listening to music:', error);
-      alert(`Error listening to music: ${(error as any).message}`);
+      
     }
   }
 
