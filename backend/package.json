@@ -9,7 +9,8 @@
       "deploy": "npx hardhat run scripts/deployOysterToken.js --network localhost",
       "test": "npx hardhat test",
       "console": "npx hardhat console --network localhost",
-      "redeploy": "node services/resetDatabase.js ; npx hardhat clean ; npx hardhat compile ; npx hardhat run scripts/deployOysterToken.js --network localhost"
+      "redeploy": "npm run reset-db && npx hardhat clean && npx hardhat compile && npx hardhat run scripts/deployOysterToken.js --network localhost",
+      "reset-db": "node services/resetDatabase.js"
     },
     "keywords": [
       "blockchain",
