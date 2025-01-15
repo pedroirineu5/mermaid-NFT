@@ -21,7 +21,7 @@ import {
     DialogTrigger,
     DialogFooter,
   } from "@/components/ui/dialog";
-import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal, Key, useEffect } from "react";
+import { useEffect } from "react";
 import { useState } from "react";
   
 
@@ -50,13 +50,11 @@ function CriarMusicPage(){
           ]);
     
           console.log("Direitos adicionados com sucesso:", response);
-          alert(`Success: ${response.message}, Tx Hash: ${response.transactionHash}`);
     
           event.currentTarget.reset();
     
         } catch (error) {
           console.error("Erro ao adicionar direitos:", error);
-          alert(`Error: ${error}`);
         }
       };
 
@@ -94,14 +92,10 @@ function CriarMusicPage(){
           );
     
           console.log("Direitos removidos com sucesso:", response);
-          alert(
-            `Success: ${response.message}, Tx Hash: ${response.transactionHash}`
-          );
-    
+
           event.currentTarget.reset();
         } catch (error) {
           console.error("Erro ao remover direitos:", error);
-          alert(`Error: ${error}`);
         }
       };
 
@@ -109,15 +103,11 @@ function CriarMusicPage(){
         try {
           const response = await sealMusicContract({});
           console.log(response.message);
-          alert(
-            `Success: ${response.message}, Tx Hash: ${response.transactionHash}`
-          );
-    
-          // Atualizar o estado para indicar que o contrato foi selado
           setIsContractSealed(true);
-        } catch (error) {
+        } 
+        catch (error) {
           console.error("Erro ao selar o contrato:", error);
-          alert(`Error: ${error}`);
+         
         }
       };
     

@@ -1,5 +1,20 @@
+import { buyRightsMusic } from "../services/api"; 
 
 function MusicPage() {
+
+  const handleBuyMusic = async () => {
+    try {
+      const response = await buyRightsMusic({
+        musicName: "Smooth Criminal",        
+      });
+
+      console.log("Compra realizada com sucesso:", response);
+      
+    } catch (error) {
+      console.error("Erro ao comprar a música:", error);
+      
+    }
+  };
 
   async function handleListenMusic(): Promise<void> {
     try {
@@ -52,7 +67,7 @@ function MusicPage() {
           </div>
           <div className="flex flex-col items-center">
             <span className="text-2xl text-[#80A2A6]">Comprar</span>
-            <button className="bg-[#BF5934] text-[#f2f2f2] text-xl rounded-3xl p-6">0.15ETH</button>
+            <button onClick={handleBuyMusic} className="bg-[#BF5934] text-[#f2f2f2] text-xl rounded-3xl p-6">0.15ETH</button>
           </div>
         </div>
         <footer className="bg-[#00060D] font-light w-screen text-[9px] text-white"> made by Team Leviatã</footer>
