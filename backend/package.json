@@ -4,13 +4,12 @@
   "description": "Backend para o DApp Mermaid, uma plataforma para gestão de direitos autorais na indústria musical.",
   "main": "app.js",
   "scripts": {
-      "start": "node app.js",
-      "compile": "npx hardhat compile",
-      "deploy": "npx hardhat run scripts/deployOysterToken.js --network localhost",
-      "test": "npx hardhat test",
-      "console": "npx hardhat console --network localhost",
-      "redeploy": "npx hardhat clean && npx hardhat compile && npx hardhat run scripts/deployOysterToken.js --network localhost",
-      "resetdb": "mysql -u mermaiduser -pmermaiduser mermaid_db < reset_database.sql"
+    "start": "node app.js",
+    "compile": "npx hardhat compile",
+    "deploy": "npx hardhat run scripts/deployOysterToken.js --network localhost",
+    "test": "npx hardhat test",
+    "console": "npx hardhat console --network localhost",
+    "redeploy": "npx hardhat clean && npx hardhat compile && npx hardhat run scripts/deployOysterToken.js --network localhost"
   },
   "keywords": [
     "blockchain",
@@ -25,6 +24,7 @@
   "dependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^1.1.1",
+    "@openzeppelin/contracts": "^5.1.0",
     "chai": "^4.5.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
-    "@openzeppelin/contracts": "^5.1.0",
     "hardhat": "^2.22.17",
     "mocha": "^11.0.1"
   }
