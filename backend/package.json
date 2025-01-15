@@ -1,45 +1,42 @@
 {
-  "name": "mermaid-nft",
-  "version": "1.0.0",
-  "description": "Backend para o DApp Mermaid, uma plataforma descentralizada para gestão de direitos autorais na indústria musical, permitindo que artistas registrem suas músicas, definam e gerenciem a divisão de royalties de forma transparente e segura usando contratos inteligentes.",
-  "main": "app.js",
-  "scripts": {
-      "start": "node services/resetDatabase.js && node app.js",
-      "start:dev": "nodemon services/resetDatabase.js && nodemon app.js",
-      "reset-db": "node services/resetDatabase.js",
+    "name": "mermaid-nft",
+    "version": "1.0.0",
+    "description": "Backend para o DApp Mermaid, uma plataforma para gestão de direitos autorais na indústria musical.",
+    "main": "app.js",
+    "scripts": {
+      "start": "node app.js",
       "compile": "npx hardhat compile",
       "deploy": "npx hardhat run scripts/deployOysterToken.js --network localhost",
       "test": "npx hardhat test",
       "console": "npx hardhat console --network localhost",
       "redeploy": "npx hardhat clean && npx hardhat compile && npx hardhat run scripts/deployOysterToken.js --network localhost"
-  },
-  "keywords": [
+    },
+    "keywords": [
       "blockchain",
       "dapp",
       "web3",
       "music",
       "copyright",
       "smart-contracts"
-  ],
-  "author": "Team Leviatã",
-  "license": "ISC",
-  "dependencies": {
-      "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-      "@nomicfoundation/hardhat-verify": "^2.0.4",
-      "@openzeppelin/contracts": "^5.0.2",
-      "chai": "^5.1.0",
+    ],
+    "author": "Gabriel Vasconcelos <dev.vitruvius@gmail.com>",
+    "license": "ISC",
+    "dependencies": {
+      "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+      "@nomicfoundation/hardhat-verify": "^1.1.1",
+      "@openzeppelin/contracts": "^5.1.0",
+      "chai": "^4.5.0",
       "cors": "^2.8.5",
-      "dotenv": "^16.4.5",
-      "ethers": "^6.14.2",
+      "dotenv": "^16.4.7",
+      "ethers": "^6.13.4",
       "express": "^4.18.2",
-      "mysql2": "^3.9.2",
+      "mysql2": "^3.12.0",
       "web3": "^4.5.0",
       "websocket": "^1.0.35"
-  },
-  "devDependencies": {
-      "@nomicfoundation/hardhat-ethers": "^3.0.5",
-      "hardhat": "^2.20.1",
-      "mocha": "^10.3.0",
-      "nodemon": "^3.1.0"
+    },
+    "devDependencies": {
+      "@nomicfoundation/hardhat-ethers": "^3.0.8",
+      "hardhat": "^2.22.17",
+      "mocha": "^11.0.1"
+    }
   }
-}
