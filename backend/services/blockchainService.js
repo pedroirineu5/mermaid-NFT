@@ -10,21 +10,18 @@ let oysterVaultInstance;
 let wallet;
 
 async function initializeBlockchainService() {
-    console.log("===== Initializing Blockchain Service =====");
+    console.log("Initializing Blockchain Service...");
 
-    // Check for the existence of deploy-data.json
     if (!fs.existsSync('deploy-data.json')) {
         throw new Error("deploy-data.json file not found. Please run the deployment script before starting the backend.");
     }
 
-    // Check for the validity of deploy-data.json
     let deployData;
     try {
         deployData = JSON.parse(fs.readFileSync('deploy-data.json', 'utf8'));
     } catch (error) {
         throw new Error("Error reading deploy-data.json. Please ensure the file is a valid JSON.");
     }
-    console.log("deployData:", deployData);
 
     const oysterTokenAddress = deployData.oysterToken.address;
     const oysterTokenABI = deployData.oysterToken.abi;
@@ -33,8 +30,7 @@ async function initializeBlockchainService() {
     const oysterVaultAddress = deployData.oysterVault.address;
     const oysterVaultABI = deployData.oysterVault.abi;
 
-    // Obter a carteira (signer) diretamente do provedor
-    wallet = await provider.getSigner(0); // Pega a primeira conta disponível
+    wallet = await provider.getSigner(0);
 
     console.log("Wallet Address:", await wallet.getAddress());
 
@@ -43,202 +39,154 @@ async function initializeBlockchainService() {
         oysterTokenABI,
         wallet
     );
-    console.log("oysterTokenInstance Address:", oysterTokenInstance.target);
 
     musicContractInstance = new ethers.Contract(
         musicContractAddress,
         musicContractABI,
         wallet
     );
-    console.log("musicContractInstance Address:", musicContractInstance.target);
 
     oysterVaultInstance = new ethers.Contract(
         oysterVaultAddress,
         oysterVaultABI,
         wallet
     );
-    console.log("oysterVaultInstance Address:", oysterVaultInstance.target);
 
-    console.log("===== Blockchain Service Initialized =====");
-}
-
-async function validateMusicContract(addressMusicContract) {
-    console.log("===== Validating Music Contract =====");
-    console.log("Validating Music Contract Address (input):", addressMusicContract);
-    if (!oysterTokenInstance) {
-        throw new Error('Blockchain service not initialized.');
-    }
-    console.log("oysterTokenInstance Address (inside validateMusicContract):", oysterTokenInstance.target);
-
-    console.log("Calling validateMusicContracts with address:", addressMusicContract);
-
-    try {
-        const tx = await oysterTokenInstance.validateMusicContracts(addressMusicContract);
-        console.log("Transaction:", tx);
-        const receipt = await tx.wait();
-        console.log("Transaction Receipt:", receipt);
-
-        if (receipt.status === 0) {
-            console.error("Transaction Reverted:", receipt);
-            throw new Error("Transaction reverted");
-        }
-
-        console.log("Transaction Hash:", tx.hash);
-        console.log("===== Music Contract Validated =====");
-        return { hash: tx.hash, isValid: true };
-    } catch (error) {
-        console.error("Error during validateMusicContract:", error);
-        throw error;
-    }
+    console.log("Blockchain Service Initialized.");
 }
 
 async function sealMusicContract() {
-    console.log("===== Sealing Music Contract =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log("Sealing Music Contract...");
     try {
         const result = await musicContractInstance.sealRights();
         await result.wait();
-        console.log("===== Music Contract Sealed =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during sealMusicContract:", error);
         throw error;
     }
 }
 
 async function assignRights(addressRight, percentageOfRights) {
-    console.log("===== Assigning Rights =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log(`Assigning ${percentageOfRights}% rights to ${addressRight}`);
     try {
         const result = await musicContractInstance.assignRights(addressRight, percentageOfRights);
         await result.wait();
-        console.log("===== Rights Assigned =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during assignRights:", error);
         throw error;
     }
 }
 
 async function withdrawRights(addressRight, percentageOfRights) {
-    console.log("===== Withdrawing Rights =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log(`Withdrawing ${percentageOfRights}% rights from ${addressRight}`);
     try {
         const result = await musicContractInstance.withdrawRights(addressRight, percentageOfRights);
         await result.wait();
-        console.log("===== Rights Withdrawn =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during withdrawRights:", error);
         throw error;
     }
 }
 
 async function buy100OysterToken() {
-    console.log("===== Buying 100 OysterToken =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
-
+    console.log("Buying 100 OysterToken...");
     const businessRateWei = BigInt(process.env.BUSINESS_RATE_WEI);
     const tokensToBuy = 100;
     const gweiPerToken = BigInt(process.env.GWEI_PER_TOKEN);
-    
-    // Adicionando um padding de 0.00011 Ether (110000000000000 wei) para garantir que o valor seja suficiente
-    const padding = BigInt(110000000000000); 
-
-    const weiValue = BigInt(tokensToBuy) * gweiPerToken + businessRateWei + padding;
-
-    console.log("Business Rate (wei):", businessRateWei.toString());
-    console.log("Gwei per Token:", gweiPerToken.toString());
-    console.log("Wei Value to send:", weiValue.toString());
+    const weiValue = BigInt(tokensToBuy) * gweiPerToken + businessRateWei;
 
     try {
-        // Remover gasLimit para que o ethers.js calcule automaticamente
         const result = await musicContractInstance.buy100OysterToken({
             value: weiValue
         });
 
         await result.wait();
-        console.log("===== 100 OysterToken Bought =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during buy100OysterToken:", error);
         throw error;
     }
 }
 
 async function sellOysterToken(amount) {
-    console.log("===== Selling OysterToken =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log(`Selling ${amount} OysterToken...`);
     try {
         const result = await musicContractInstance.sellOysterToken(
-            BigInt(amount)
+            ethers.toBeHex(amount)
         );
 
         await result.wait();
-        console.log("===== OysterToken Sold =====");
         return result.hash;
     } catch (error) {
-        console.error("Error in sellOysterToken:", error);
-        throw new Error(`Failed to sell Oyster tokens: ${error.message}`);
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
+        console.error("Error during sellOysterToken:", error);
+        throw error;
     }
 }
 
 async function getRemainingRightsDivision() {
-    console.log("===== Getting Remaining Rights Division =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log("Getting Remaining Rights Division...");
     try {
         const result = await musicContractInstance.remainingRightsDivision();
-        console.log("===== Remaining Rights Division:", result.toString());
         return result;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during getRemainingRightsDivision:", error);
         throw error;
     }
 }
 
 async function isMusicContractSealed() {
-    console.log("===== Checking if Music Contract is Sealed =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log("Checking if Music Contract is Sealed...");
     try {
         const result = await musicContractInstance.musicContactIsSealed();
-        console.log("===== Music Contract Sealed Status:", result);
         return result;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during isMusicContractSealed:", error);
         throw error;
     }
 }
 
 async function getTokensPerAddress(address) {
-    console.log("===== Getting Tokens Per Address =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
+    console.log(`Getting Tokens for Address: ${address}`);
     try {
         const result = await musicContractInstance.tokensPerAddress(address);
-        console.log("===== Tokens Per Address:", result.toString());
         return result;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during getTokensPerAddress:", error);
         throw error;
     }
 }
 
 async function getSignerAddress() {
+    if (!musicContractInstance) {
+        throw new Error('Music contract not initialized.');
+    }
     if (!wallet) {
         throw new Error('Wallet not initialized.');
     }
@@ -246,71 +194,51 @@ async function getSignerAddress() {
 }
 
 async function buyRightsMusic() {
-    console.log("===== Buying Music Rights =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
-
+    console.log("Buying Music Rights...");
     const rightPurchaseValueInGwei = BigInt(process.env.RIGHT_PURCHASE_VALUE_IN_GWEI);
     const weiValue = rightPurchaseValueInGwei * BigInt(1e9);
 
     try {
         const result = await musicContractInstance.buyRightsMusic({
-            value: weiValue.toString(),
+            value: weiValue,
             gasLimit: 300000
         });
 
         await result.wait();
-        console.log("===== Music Rights Bought =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during buyRightsMusic:", error);
         throw error;
     }
 }
 
 async function listenMusic() {
-    console.log("===== Listening to Music =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
-
+    console.log("Listening to Music...");
     const valueForListeningInGwei = BigInt(process.env.VALUE_FOR_LISTENING_IN_GWEI);
     const weiValue = valueForListeningInGwei * BigInt(1e9);
 
     try {
         const result = await musicContractInstance.listenMusic({
-            value: weiValue.toString(),
+            value: weiValue,
             gasLimit: 300000
         });
 
         await result.wait();
-        console.log("===== Music Listened To =====");
         return result.hash;
     } catch (error) {
+        if (error.code === 'NETWORK_ERROR') {
+            throw new Error('Network error. Please check your connection.');
+        }
         console.error("Error during listenMusic:", error);
-        throw error;
-    }
-}
-
-async function viewBalance() {
-    console.log("===== Viewing Balance =====");
-    if (!musicContractInstance) {
-        throw new Error('Music contract not initialized.');
-    }
-    try {
-        const result = await musicContractInstance.viewBalance();
-        console.log("===== Balance:", result.toString());
-        return result;
-    } catch (error) {
-        console.error("Error during viewBalance:", error);
         throw error;
     }
 }
 
 module.exports = {
     initializeBlockchainService,
-    validateMusicContract,
     sealMusicContract,
     assignRights,
     withdrawRights,
@@ -322,5 +250,4 @@ module.exports = {
     getSignerAddress,
     buyRightsMusic,
     listenMusic,
-    viewBalance
 };

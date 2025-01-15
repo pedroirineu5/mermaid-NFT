@@ -2,7 +2,8 @@ const express = require('express');
 const cors = require('cors');
 const blockchainService = require('./services/blockchainService');
 const { listenToEvents } = require('./services/eventListener');
-const cors = require('cors');
+const { createDatabaseIfNotExists } = require('./services/db');
+const { ethers } = require('ethers');
 
 require('dotenv').config();
 
@@ -12,90 +13,75 @@ const port = 3000;
 app.use(express.json());
 
 const corsOptions = {
-  origin: "http://localhost:5173",
-  optionsSuccessStatus: 200,
+    origin: "http://localhost:5173",
+    optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-
 async function startApp() {
     try {
+        await createDatabaseIfNotExists();
         await blockchainService.initializeBlockchainService();
-        console.log('Blockchain service initialized.');
+        console.log('Blockchain service ready.');
 
         listenToEvents();
 
-        app.post('/validate-music-contract', async (req, res) => {
-            const { addressMusicContract } = req.body;
-            try {
-                const result = await blockchainService.validateMusicContract(
-                    addressMusicContract
-                );
-                if (result.isValid) {
-                    res.send({
-                        message: 'Music contract validated!',
-                        transactionHash: result.hash,
-                        musicContractAddress: addressMusicContract,
-                    });
-                } else {
-                    res.status(400).send({
-                        error: 'Music contract validation failed.',
-                        transactionHash: result.hash,
-                        musicContractAddress: addressMusicContract,
-                    });
-                }
-            } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error validating music contract: ${error.message}`);
-            }
-        });
-
         app.post('/assign-rights', async (req, res) => {
             const { addressRight, percentageOfRights } = req.body;
+
+            if (!ethers.isAddress(addressRight)) {
+                return res.status(400).send({ error: 'Invalid address format.' });
+            }
+
+            if (typeof percentageOfRights !== 'number' || percentageOfRights <= 0 || percentageOfRights > 100) {
+                return res.status(400).send({ error: 'Invalid percentage of rights. Must be a number between 1 and 100.' });
+            }
+
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract already sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract is already sealed.' });
                 }
+
                 const transactionHash = await blockchainService.assignRights(addressRight, percentageOfRights);
-                res.send(`Music rights assigned! Transaction hash: ${transactionHash}`);
+                res.status(200).send({ message: 'Music rights assigned!', transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error assigning music rights: ${error.message}`);
+                console.error('Error assigning music rights:', error);
+                res.status(500).send({ error: `Failed to assign music rights: ${error.message}` });
             }
         });
 
         app.post('/withdraw-rights', async (req, res) => {
             const { addressRight, percentageOfRights } = req.body;
+
+            if (!ethers.isAddress(addressRight)) {
+                return res.status(400).send({ error: 'Invalid address format.' });
+            }
+
+            if (typeof percentageOfRights !== 'number' || percentageOfRights <= 0 || percentageOfRights > 100) {
+                return res.status(400).send({ error: 'Invalid percentage of rights. Must be a number between 1 and 100.' });
+            }
+
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract already sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract is already sealed.' });
                 }
 
                 const transactionHash = await blockchainService.withdrawRights(addressRight, percentageOfRights);
-                res.send(`Music rights withdraw! Transaction hash: ${transactionHash}`);
+                res.status(200).send({ message: 'Music rights withdrawn!', transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error withdraw music rights: ${error.message}`);
+                console.error('Error withdrawing music rights:', error);
+                res.status(500).send({ error: `Failed to withdraw music rights: ${error.message}` });
             }
         });
 
         app.post('/seal-music-contract', async (req, res) => {
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract already sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract is already sealed.' });
                 }
 
                 const transactionHash = await blockchainService.sealMusicContract();
@@ -109,83 +95,66 @@ async function startApp() {
         app.post('/buy-oyster-token', async (req, res) => {
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (!isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract is not sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract must be sealed before buying tokens.' });
                 }
 
                 const transactionHash = await blockchainService.buy100OysterToken();
-                res.send(
-                    `100 OysterTokens purchased! Transaction hash: ${transactionHash}`
-                );
+                res.status(200).send({ message: '100 OysterTokens purchased!', transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error purchasing tokens: ${error.message}`);
+                console.error('Error purchasing tokens:', error);
+                res.status(500).send({ error: `Failed to purchase tokens: ${error.message}` });
             }
         });
 
         app.post('/sell-oyster-token', async (req, res) => {
             const { amount } = req.body;
+
+            if (typeof amount !== 'number' || amount <= 0) {
+                return res.status(400).send({ error: 'Invalid amount. Must be a positive number.' });
+            }
+
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (!isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract is not sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract must be sealed before selling tokens.' });
                 }
 
-                const transactionHash = await blockchainService.sellOysterToken(
-                    amount
-                );
-                res.send(
-                    `${amount} OysterTokens sold! Transaction hash: ${transactionHash}`
-                );
+                const transactionHash = await blockchainService.sellOysterToken(amount);
+                res.status(200).send({ message: `${amount} OysterTokens sold!`, transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error selling tokens: ${error.message}`);
+                console.error('Error selling tokens:', error);
+                res.status(500).send({ error: `Failed to sell tokens: ${error.message}` });
             }
         });
 
         app.post('/buy-rights-music', async (req, res) => {
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (!isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract is not sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract must be sealed before buying music rights.' });
                 }
 
                 const transactionHash = await blockchainService.buyRightsMusic();
-                res.send(
-                    `Music rights purchased! Transaction hash: ${transactionHash}`
-                );
+                res.status(200).send({ message: 'Music rights purchased!', transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error purchasing music rights: ${error.message}`);
+                console.error('Error purchasing music rights:', error);
+                res.status(500).send({ error: `Failed to purchase music rights: ${error.message}` });
             }
         });
 
         app.post('/listen-music', async (req, res) => {
             try {
                 const isSealed = await blockchainService.isMusicContractSealed();
-
                 if (!isSealed) {
-                    return res.status(400).send({
-                        error: `Music contract is not sealed`
-                    });
+                    return res.status(400).send({ error: 'Music contract must be sealed before listening to the music.' });
                 }
 
                 const transactionHash = await blockchainService.listenMusic();
-                res.send(
-                    `Music listened! Transaction hash: ${transactionHash}`
-                );
+                res.status(200).send({ message: 'Music listened to!', transactionHash });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error listening music: ${error.message}`);
+                console.error('Error listening to music:', error);
+                res.status(500).send({ error: `Failed to listen to music: ${error.message}` });
             }
         });
 
@@ -194,19 +163,24 @@ async function startApp() {
                 const remainingRights = await blockchainService.getRemainingRightsDivision();
                 res.json({ remainingRights: remainingRights.toString() });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error fetching remaining rights: ${error.message}`);
+                console.error('Error fetching remaining rights:', error);
+                res.status(500).send({ error: `Failed to fetch remaining rights: ${error.message}` });
             }
         });
 
         app.get('/tokens/:address', async (req, res) => {
             const { address } = req.params;
+
+            if (!ethers.isAddress(address)) {
+                return res.status(400).send({ error: 'Invalid address format.' });
+            }
+
             try {
                 const tokens = await blockchainService.getTokensPerAddress(address);
                 res.json({ tokens: tokens.toString() });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error fetching tokens per address: ${error.message}`);
+                console.error('Error fetching tokens per address:', error);
+                res.status(500).send({ error: `Failed to fetch tokens for address: ${error.message}` });
             }
         });
 
@@ -215,18 +189,8 @@ async function startApp() {
                 const isSealed = await blockchainService.isMusicContractSealed();
                 res.json({ isSealed });
             } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error checking if contract is sealed: ${error.message}`);
-            }
-        });
-
-        app.get('/view-balance', async (req, res) => {
-            try {
-                const balance = await blockchainService.viewBalance();
-                res.json({ balance: balance.toString() });
-            } catch (error) {
-                console.error(error);
-                res.status(500).send(`Error checking balance: ${error.message}`);
+                console.error('Error checking if contract is sealed:', error);
+                res.status(500).send({ error: `Failed to check if contract is sealed: ${error.message}` });
             }
         });
 
@@ -234,10 +198,7 @@ async function startApp() {
             console.log(`Mermaid backend listening at http://localhost:${port}`);
         });
     } catch (error) {
-        console.error(
-            'Failed to initialize blockchain service or start event listener:',
-            error
-        );
+        console.error('Failed to initialize blockchain service or start event listener:', error);
         process.exit(1);
     }
 }

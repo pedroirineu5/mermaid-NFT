@@ -4,7 +4,6 @@ const path = require("path");
 const { createEnvFileIfNotExists, updateEnvFile } = require("./updateEnv");
 
 async function main() {
-    // Cria o arquivo .env se ele não existir
     await createEnvFileIfNotExists();
 
     const [deployer] = await hre.ethers.getSigners();
@@ -85,7 +84,6 @@ async function main() {
     );
     console.log("Deployment data saved to deploy-data.json");
 
-    // Atualiza o arquivo .env após a implantação
     await updateEnvFile(deployData);
     console.log(".env file updated by deploy script");
 }
