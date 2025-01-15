@@ -19,11 +19,45 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Códigos de escape ANSI para cores (igual ao blockchainService.js)
+const colors = {
+    reset: "\x1b[0m",
+    bright: "\x1b[1m",
+    dim: "\x1b[2m",
+    underscore: "\x1b[4m",
+    blink: "\x1b[5m",
+    reverse: "\x1b[7m",
+    hidden: "\x1b[8m",
+
+    fg: {
+        black: "\x1b[30m",
+        red: "\x1b[31m",
+        green: "\x1b[32m",
+        yellow: "\x1b[33m",
+        blue: "\x1b[34m",
+        magenta: "\x1b[35m",
+        cyan: "\x1b[36m",
+        white: "\x1b[37m",
+        crimson: "\x1b[38m"
+    },
+    bg: {
+        black: "\x1b[40m",
+        red: "\x1b[41m",
+        green: "\x1b[42m",
+        yellow: "\x1b[43m",
+        blue: "\x1b[44m",
+        magenta: "\x1b[45m",
+        cyan: "\x1b[46m",
+        white: "\x1b[47m",
+        crimson: "\x1b[48m"
+    }
+};
+
 async function startApp() {
     try {
         await createDatabaseIfNotExists();
         await blockchainService.initializeBlockchainService();
-        console.log('Blockchain service ready.');
+        console.log(colors.fg.green + colors.bright + 'Blockchain service ready.' + colors.reset);
 
         listenToEvents();
 
@@ -47,7 +81,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.assignRights(addressRight, percentageOfRights);
                 res.status(200).send({ message: 'Music rights assigned!', transactionHash });
             } catch (error) {
-                console.error('Error assigning music rights:', error);
+                console.error(colors.fg.red + 'Error assigning music rights:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to assign music rights: ${error.message}` });
             }
         });
@@ -72,7 +106,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.withdrawRights(addressRight, percentageOfRights);
                 res.status(200).send({ message: 'Music rights withdrawn!', transactionHash });
             } catch (error) {
-                console.error('Error withdrawing music rights:', error);
+                console.error(colors.fg.red + 'Error withdrawing music rights:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to withdraw music rights: ${error.message}` });
             }
         });
@@ -87,7 +121,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.sealMusicContract();
                 res.status(200).send({ message: 'Music contract sealed successfully!', transactionHash });
             } catch (error) {
-                console.error('Error sealing music contract:', error);
+                console.error(colors.fg.red + 'Error sealing music contract:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to seal music contract: ${error.message}` });
             }
         });
@@ -102,7 +136,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.buy100OysterToken();
                 res.status(200).send({ message: '100 OysterTokens purchased!', transactionHash });
             } catch (error) {
-                console.error('Error purchasing tokens:', error);
+                console.error(colors.fg.red + 'Error purchasing tokens:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to purchase tokens: ${error.message}` });
             }
         });
@@ -123,7 +157,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.sellOysterToken(amount);
                 res.status(200).send({ message: `${amount} OysterTokens sold!`, transactionHash });
             } catch (error) {
-                console.error('Error selling tokens:', error);
+                console.error(colors.fg.red + 'Error selling tokens:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to sell tokens: ${error.message}` });
             }
         });
@@ -138,7 +172,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.buyRightsMusic();
                 res.status(200).send({ message: 'Music rights purchased!', transactionHash });
             } catch (error) {
-                console.error('Error purchasing music rights:', error);
+                console.error(colors.fg.red + 'Error purchasing music rights:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to purchase music rights: ${error.message}` });
             }
         });
@@ -153,7 +187,7 @@ async function startApp() {
                 const transactionHash = await blockchainService.listenMusic();
                 res.status(200).send({ message: 'Music listened to!', transactionHash });
             } catch (error) {
-                console.error('Error listening to music:', error);
+                console.error(colors.fg.red + 'Error listening to music:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to listen to music: ${error.message}` });
             }
         });
@@ -163,7 +197,7 @@ async function startApp() {
                 const remainingRights = await blockchainService.getRemainingRightsDivision();
                 res.json({ remainingRights: remainingRights.toString() });
             } catch (error) {
-                console.error('Error fetching remaining rights:', error);
+                console.error(colors.fg.red + 'Error fetching remaining rights:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to fetch remaining rights: ${error.message}` });
             }
         });
@@ -179,8 +213,8 @@ async function startApp() {
                 const tokens = await blockchainService.getTokensPerAddress(address);
                 res.json({ tokens: tokens.toString() });
             } catch (error) {
-                console.error('Error fetching tokens per address:', error);
-                res.status(500).send({ error: `Failed to fetch tokens for address: ${error.message}` });
+                console.error(colors.fg.red + 'Error fetching tokens:' + colors.reset, error);
+                res.status(500).send({ error: `Failed to fetch tokens: ${error.message}` });
             }
         });
 
@@ -189,16 +223,16 @@ async function startApp() {
                 const isSealed = await blockchainService.isMusicContractSealed();
                 res.json({ isSealed });
             } catch (error) {
-                console.error('Error checking if contract is sealed:', error);
+                console.error(colors.fg.red + 'Error checking if contract is sealed:' + colors.reset, error);
                 res.status(500).send({ error: `Failed to check if contract is sealed: ${error.message}` });
             }
         });
 
         app.listen(port, () => {
-            console.log(`Mermaid backend listening at http://localhost:${port}`);
+            console.log(colors.fg.yellow + `Mermaid backend listening at http://localhost:${port}` + colors.reset);
         });
     } catch (error) {
-        console.error('Failed to initialize blockchain service or start event listener:', error);
+        console.error(colors.fg.red + 'Failed to initialize blockchain service or start event listener:' + colors.reset, error);
         process.exit(1);
     }
 }
