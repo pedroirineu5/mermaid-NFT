@@ -1,8 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
+import { buyOysterToken, sellOysterToken } from "../services/api"; 
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 function ProdutorView() {
   let valor = 0.15;
-  const [isSealed, setIsSealed] = useState(false); // Estado para armazenar o resultado
+  const [isSealed, setIsSealed] = useState(false);
+  const [sellAmount, setSellAmount] = useState<number>(0); 
 
   async function checkIsSealed(): Promise<void> {
     try {
@@ -12,15 +26,38 @@ function ProdutorView() {
       }
       const data = await response.json();
       console.log('Is contract sealed:', data.isSealed);
-      setIsSealed(data.isSealed); // Atualiza o estado com o valor retornado
+      setIsSealed(data.isSealed); 
     } catch (error) {
       console.error('Error checking if contract is sealed:', error);
     }
   }
 
   useEffect(() => {
-    checkIsSealed(); // Chama a função quando o componente é montado
-  }, []); // O array vazio [] garante que a função seja chamada apenas uma vez
+    checkIsSealed(); 
+  }, []); 
+
+  const handleBuyTokens = async () => {
+    try {
+      const response = await buyOysterToken({}); 
+      console.log("Tokens comprados com sucesso:", response);
+      
+    } catch (error) {
+      console.error("Erro ao comprar tokens:", error);
+      
+    }
+  };
+
+  const handleSellTokens = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+    try {
+      const response = await sellOysterToken({ amount: sellAmount });
+      console.log("Tokens vendidos com sucesso:", response);
+    } catch (error) {
+      console.error("Erro ao vender tokens:", error);
+    }
+  };
 
   return (
       <div className="w-screen h-screen bg-[#1B2B40] flex flex-col items-center justify-between ">
@@ -32,7 +69,6 @@ function ProdutorView() {
         </header>
   
         <div className="text-6xl text-bold text-[#fff] mt-8">Smooth Criminal</div>
-        {/* Exibe uma mensagem com base no valor de isSealed */}
         {isSealed ? ( 
           <p className="text-xl text-green-500">Contrato Selado</p>
         ) : (
@@ -96,16 +132,59 @@ function ProdutorView() {
           </div>
         </div>
         <div className="flex flex-row items-center justify-center space-x-8 w-full px-8 mt-8">
-          <button className="text-2xl p-4 bg-[#bf5934] rounded-full text-[#fff]">
-            Vender Tokens
-          </button>
-          <span className="text-2xl text-[#fff]">
-            <span className="font-bold">Valor Total:</span> {valor * 10}eth
-          </span>
-          <button className="text-2xl p-4 bg-[#bf5934] rounded-full text-[#fff]">
-            Comprar e distribuir 100 tokens
-          </button>
-        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <button className="text-2xl p-4 bg-[#bf5934] rounded-full text-[#fff]">
+              Vender Tokens
+            </button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] bg-[#bf5934]">
+            <DialogHeader>
+              <DialogTitle>Vender OSTokens</DialogTitle>
+              <DialogDescription>
+                Venda seus OSTokens.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSellTokens}>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4 text-white">
+                  <Label htmlFor="amount" className="text-right">
+                    Quantidade
+                  </Label>
+                  <Input
+                    id="amount"
+                    type="number"
+                    value={sellAmount}
+                    onChange={(e) => setSellAmount(Number(e.target.value))}
+                    placeholder="Quantidade"
+                    className="col-span-3 text-white outline-stone-50"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  variant={"outline"}
+                  size="lg"
+                  className="text-white"
+                >
+                  Vender
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <span className="text-2xl text-[#fff]">
+          <span className="font-bold">Valor Total:</span> {valor * 10}eth
+        </span>
+        <button
+          onClick={handleBuyTokens}
+          className="text-2xl p-4 bg-[#bf5934] rounded-full text-[#fff]"
+        >
+          Comprar e distribuir 100 tokens
+        </button>
+      </div>
   
         <footer className="bg-[#00060D] font-light w-screen text-[9px] text-white">
           made by Team Leviatã
