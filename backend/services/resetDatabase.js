@@ -78,7 +78,7 @@ async function resetDatabase() {
       console.log(`Table ${tableName} created successfully.`);
     }
 
-    console.log(`Database ${process.env.DB_DATABASE} reset and implementation successful!`); // Mensagem de sucesso aprimorada
+    console.log(`Database ${process.env.DB_DATABASE} reset and implementation successful!`);
   } catch (error) {
     console.error('Error resetting database:', error.sqlMessage || error);
     process.exit(1);
