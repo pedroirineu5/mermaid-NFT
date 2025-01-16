@@ -12,7 +12,7 @@ function MusicPage() {
         </header>
 
         <div className="rounded-3xl w-[60vw] h-[60vh] bg-slate-700 flex flex-row items justify-between">
-          <img className="rounded-l-3xl basis-1/2" src="scriminal.jpg" alt="Smooth Criminal" />
+          <img className="rounded-l-3xl basis-1/2" src="coldplay.png" alt="Smooth Criminal" />
 
           <div className="basis-1/2 flex flex-col items-center justify-center space-y-4">
                 <span className="text-5xl text-bold text-[#fff]">Yellow</span>

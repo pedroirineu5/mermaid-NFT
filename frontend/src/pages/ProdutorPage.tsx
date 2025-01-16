@@ -43,19 +43,19 @@ function ProdutorPage() {
             <div className="flex flex-row items-center justify-evenly  ">
             
             <div className="rounded-3xl w-80 h-96 bg-slate-700 flex flex-col items-center justify-center shadow-md">
-              <img className="rounded-t-3xl object-cover w-full h-2/3" src="scriminal.jpg" alt="Smooth Criminal" />
+              <img className="rounded-t-3xl object-cover w-full h-2/3" src="scriminal.png" alt="Smooth Criminal" />
               <span className="text-3xl text-[#fff]">Smooth Criminal</span>
               <button onClick={() => viewMusic1Prod()} className="bg-[#BF5934] w-20 text-[#f2f2f2] rounded-3xl p-3 m-5">Ver</button>
             </div>
 
             <div className="rounded-3xl w-80 h-96 bg-slate-700 flex flex-col items-center justify-center">
-              <img className="rounded-t-3xl object-cover w-full h-2/3" src="coldplay.jpg" alt="Yellow- coldplay" />
+              <img className="rounded-t-3xl object-cover w-full h-2/3" src="coldplay.png" alt="Yellow- coldplay" />
               <span className="text-3xl text-[#fff]">Yellow</span>
               <button onClick={() => viewMusic2Prod()} className="bg-[#BF5934] w-20 text-[#f2f2f2] rounded-3xl p-3 m-5">Ver</button>
             </div>
 
             <div className="rounded-3xl w-80 h-96 bg-slate-700 flex flex-col items-center  justify-center">
-              <img className="rounded-t-3xl object-cover w-full h-2/3" src="luanSantana.jfif" alt="Luan Santana" />
+              <img className="rounded-t-3xl object-cover w-full h-2/3" src="luanSantana.png" alt="Luan Santana" />
               <span className="text-3xl text-[#fff]">Meio Termo</span>
               <button onClick={() => viewMusic3Prod()} className="bg-[#BF5934] w-20 text-[#f2f2f2] rounded-3xl p-3 m-5">Ver</button>
             </div>

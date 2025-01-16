@@ -2,7 +2,6 @@
 import axios from "axios";
 const API_BASE_URL = "http://localhost:3000"; 
 
-// ---------- INTERFACES PARA REQUISIÇÕES E RESPOSTAS ----------
 
 // GET /remaining-rights
 interface RemainingRightsResponse {
@@ -100,7 +99,6 @@ interface WithdrawRightsResponse {
   transactionHash: string;
 }
 
-// ---------- FUNÇÕES PARA CHAMADAS GET ----------
 
 // Obter a quantidade restante de direitos que podem ser atribuídos
 export const getRemainingRights = async (): Promise<RemainingRightsResponse> => {
@@ -140,17 +138,6 @@ export const isMusicContractSealed = async (): Promise<IsSealedResponse> => {
   }
 };
 
-// Visualizar o saldo de ether do contrato inteligente
-export const viewBalance = async (): Promise<ViewBalanceResponse> => {
-  try {
-    const response = await axios.get<ViewBalanceResponse>(
-      `${API_BASE_URL}/view-balance`
-    );
-    return response.data;
-  } catch (error) {
-    handleAxiosError(error, "Erro ao visualizar o saldo");
-  }
-};
 
 // ---------- FUNÇÕES PARA CHAMADAS POST ----------
 
