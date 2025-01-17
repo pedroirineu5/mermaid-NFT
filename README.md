@@ -1,6 +1,6 @@
-# Mermaid - Gestão de Direitos Autorais na Indústria Musical
+# Mermaid NFT
 
-Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma solução para gestão de direitos autorais na indústria musical. Ele permite que artistas e detentores de direitos registrem e gerenciem seus direitos de forma transparente e segura na blockchain.
+Mermaid NFT é um DApp full-stack desenvolvido como **projeto final da trilha de aprendizado Crypto Submersion do programa de bolsas em AWS Blockchain e Real Digital pelo Compass UOL.** Ele fornece uma solução para gestão de direitos autorais na indústria musical, permitindo que artistas e detentores de direitos registrem e gerenciem seus direitos de forma transparente e segura na blockchain.
 
 ## Funcionalidades
 
@@ -9,7 +9,30 @@ Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma soluç�
 *   **Tokenização:** Utiliza o OysterToken (OST) para representar a propriedade e facilitar transações.
 *   **Compra e Venda de Tokens:** Os usuários podem comprar e vender OysterTokens.
 *   **Ouvir Música:** Os usuários podem pagar para ouvir músicas, com os pagamentos sendo distribuídos aos detentores de direitos.
-*   **Contrato Selado:** Oferece a opção de selar os direitos de uma música, impedindo modificações futuras.
+*   **Selamento de Contrato:** Oferece a opção de selar os direitos de uma música, impedindo modificações futuras.
+
+## Arquitetura
+
+O projeto é dividido em dois componentes principais:
+
+*   **Backend:** API RESTful construída em Node.js com Express.js que interage com os contratos inteligentes e um banco de dados MySQL.
+*   **Frontend:** Aplicação React que fornece a interface do usuário para interagir com a API e os contratos inteligentes.
+
+## Tecnologias
+
+*   **Backend:**
+    *   Node.js (v18 ou superior)
+    *   Express.js
+    *   ethers.js
+    *   MySQL
+    *   Solidity
+    *   Hardhat
+*   **Frontend:**
+    *   React
+    *   Vite
+    *   Tailwind CSS
+    *   Radix UI
+    *   Axios
 
 ## Pré-requisitos
 
@@ -23,7 +46,15 @@ Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma soluç�
 1. **Clone o repositório:**
 
     ```bash
-    git clone <URL do repositório>
+    git clone https://github.com/pedroirineu5/mermaid-NFT.git
+    cd mermaid-NFT
+    ```
+
+## Configuração do Backend
+
+1. **Navegue até o diretório do backend:**
+
+    ```bash
     cd backend
     ```
 
@@ -33,11 +64,10 @@ Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma soluç�
     npm install
     ```
 
-## Configuração
-
-1. **Banco de Dados:**
+3. **Banco de Dados:**
     *   Crie um banco de dados MySQL chamado `mermaid_db`.
-    *   Atualize as variáveis de ambiente do banco de dados no arquivo `.env` (um arquivo `.env` será criado automaticamente durante o deploy, caso não exista):
+    *   Atualize as variáveis de ambiente do banco de dados no arquivo `.env` (um arquivo `.env` será criado automaticamente durante o redeploy, caso não exista):
+
         ```
         DB_HOST=localhost
         DB_USER=seu_usuario
@@ -45,8 +75,9 @@ Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma soluç�
         DB_DATABASE=mermaid_db
         ```
 
-2. **Variáveis de Ambiente:**
-    *   O arquivo `.env` também será atualizado automaticamente durante o deploy com os endereços dos contratos e outros valores relevantes:
+4. **Variáveis de Ambiente:**
+    *   O arquivo `.env` também será atualizado automaticamente durante o redeploy com os endereços dos contratos e outros valores relevantes:
+
         ```
         OYSTER_TOKEN_ADDRESS=
         OYSTER_VAULT_ADDRESS=
@@ -54,43 +85,35 @@ Mermaid é um DApp desenvolvido em Solidity e JavaScript que fornece uma soluç�
         RIGHT_PURCHASE_VALUE_IN_GWEI=1000
         VALUE_FOR_LISTENING_IN_GWEI=100
         HARDHAT_PROVIDER_URL=http://127.0.0.1:8545
+        BUSINESS_RATE_WEI=200000000000000
+        GWEI_PER_TOKEN=50000000000000
         ```
 
 ## Implantação dos Contratos
 
-1. **Limpe o cache e compile os contratos:**
-
-    ```bash
-    npx hardhat clean
-    npx hardhat compile
-    ```
-
-2. **Inicie a rede local do Hardhat:**
+1. **Inicie a rede local do Hardhat:**
 
     ```bash
     npx hardhat node
     ```
 
-3. **Em um novo terminal, execute o script de deploy:**
+2. **Em um novo terminal, execute o script de deploy e criação/reset do banco:**
 
     ```bash
-    npx hardhat run scripts/deployOysterToken.js --network localhost
+    npm run redeploy
     ```
 
     Este script irá:
     *   Criar um arquivo `.env` se ele não existir, com valores padrão.
+    *   Resetar o banco de dados, dropando e recriando as tabelas, caso já existam.
     *   Implantar os contratos `OysterToken`, `OysterVault` e `MusicContract` na rede local do Hardhat.
     *   Validar o `MusicContract` no `OysterToken`.
     *   Salvar os dados do deploy (endereços, ABIs, etc.) no arquivo `deploy-data.json`.
     *   Atualizar o arquivo `.env` com os endereços dos contratos implantados e outros valores.
 
-## Executando os Testes
+## Inicializando a API
 
-```bash
-npx hardhat test
-```
-
-## Iniciando o Backend (API)
+Em um novo terminal, dentro do diretório `backend`, execute:
 
 ```bash
 npm start
@@ -98,9 +121,30 @@ npm start
 
 A API estará disponível em `http://localhost:3000`.
 
-## Endpoints da API
+## Configuração e Execução do Frontend
 
-*   `POST /validate-music-contract` - Valida um contrato de música.
+1. **Navegue até o diretório do frontend:**
+
+    ```bash
+    cd ../frontend
+    ```
+
+2. **Instale as dependências:**
+
+    ```bash
+    npm install
+    ```
+
+3. **Inicie o frontend:**
+
+    ```bash
+    npm run dev
+    ```
+
+    O frontend estará disponível em `http://localhost:5173`.
+
+## Endpoints
+
 *   `POST /assign-rights` - Atribui direitos musicais a um endereço.
 *   `POST /withdraw-rights` - Retira direitos musicais de um endereço.
 *   `POST /seal-music-contract` - Sela um contrato de música.
@@ -111,7 +155,8 @@ A API estará disponível em `http://localhost:3000`.
 *   `GET /remaining-rights` - Retorna a divisão de direitos restante.
 *   `GET /tokens/:address` - Retorna o número de tokens por endereço.
 *   `GET /is-sealed` - Verifica se o contrato está selado.
-*   `GET /view-balance` - Retorna o saldo do contrato.
+
+**Requisições:** As requisições podem ser feitas inicialmente utilizando ferramentas como Insomnia ou Postman e, em seguida, diretamente no Frontend, utilizando o console do navegador para acompanhar as interações.
 
 ## Contribuindo
 
