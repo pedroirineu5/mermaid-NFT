@@ -11,6 +11,24 @@ Mermaid NFT é um DApp full-stack desenvolvido como **projeto final da trilha de
 *   **Ouvir Música:** Os usuários podem pagar para ouvir músicas, com os pagamentos sendo distribuídos aos detentores de direitos.
 *   **Selamento de Contrato:** Oferece a opção de selar os direitos de uma música, impedindo modificações futuras.
 
+## Protótipo das Telas
+
+Aqui estão algumas telas do protótipo desenvolvido no Figma:
+
+#### Tela de Login
+[![Tela de Login](/screenshots/login.png)](/screenshots/login.png)  
+*A tela de login permite que os usuários acessem o sistema com segurança, utilizando suas credenciais ou wallet.*
+
+#### Tela Inicial
+[![Tela Inicial](/screenshots/home.png)](/screenshots/home.png)  
+*A tela inicial apresenta uma navbar com links para navegação e um hero section destacando a proposta do Mermaid NFT.*
+
+#### Tela Dashboard (Ouvir Música)
+[![Tela Dashboard](/screenshots/dashboard-listen-music.png)](/screenshots/dashboard-listen-music.png)  
+*O dashboard permite que os usuários ouçam músicas, visualizem detalhes dos direitos autorais e gerenciem suas transações de tokens.*
+
+**Para visualizar o protótipo interativo, acesse o [Figma](https://www.figma.com/proto/eFmjXS9IOxnoHK4OETgjk4/Mermaid-NFT?node-id=4-5&p=f&t=egUqE1Xd0TRE0ZZm-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1).**
+
 ## Arquitetura
 
 O projeto é dividido em dois componentes principais:
