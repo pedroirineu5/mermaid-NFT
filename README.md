@@ -2,32 +2,25 @@
 
 Mermaid NFT é um DApp full-stack desenvolvido como **projeto final da trilha de aprendizado Crypto Submersion do programa de bolsas em AWS Blockchain e Real Digital pelo Compass UOL.** Ele fornece uma solução para gestão de direitos autorais na indústria musical, permitindo que artistas e detentores de direitos registrem e gerenciem seus direitos de forma transparente e segura na blockchain.
 
-## Funcionalidades
-
-*   **Registro de Direitos:** Permite que os usuários registrem seus direitos musicais na blockchain.
-*   **Gestão de Direitos:** Facilita a divisão, atribuição e retirada de direitos entre os detentores.
-*   **Tokenização:** Utiliza o OysterToken (OST) para representar a propriedade e facilitar transações.
-*   **Compra e Venda de Tokens:** Os usuários podem comprar e vender OysterTokens.
-*   **Ouvir Música:** Os usuários podem pagar para ouvir músicas, com os pagamentos sendo distribuídos aos detentores de direitos.
-*   **Selamento de Contrato:** Oferece a opção de selar os direitos de uma música, impedindo modificações futuras.
-
 ## Protótipo das Telas
 
-Aqui estão algumas telas do protótipo desenvolvido no Figma:
+Este projeto apresenta uma interface amigável e intuitiva. Abaixo, destacamos as principais telas, e você pode navegar pelo protótipo interativo para explorar todas as funcionalidades.
 
 #### Tela de Login
-[![Tela de Login](/screenshots/login.png)](/screenshots/login.png)  
+[![Tela de Login](/screenshots/login.png)](/screenshots/login.png)
+
 *A tela de login permite que os usuários acessem o sistema com segurança, utilizando suas credenciais ou wallet.*
 
 #### Tela Inicial
-[![Tela Inicial](/screenshots/home.png)](/screenshots/home.png)  
+[![Tela Inicial](/screenshots/home.png)](/screenshots/home.png)
+
 *A tela inicial apresenta uma navbar com links para navegação e um hero section destacando a proposta do Mermaid NFT.*
 
-#### Tela Dashboard (Ouvir Música)
-[![Tela Dashboard](/screenshots/dashboard-listen-music.png)](/screenshots/dashboard-listen-music.png)  
-*O dashboard permite que os usuários ouçam músicas, visualizem detalhes dos direitos autorais e gerenciem suas transações de tokens.*
+**Para visualizar o protótipo interativo completo, acesse o [Figma](https://www.figma.com/proto/eFmjXS9IOxnoHK4OETgjk4/Mermaid-NFT?node-id=4-5&starting-point-node-id=4%3A5&scaling=scale-down-width&content-scaling=fixed&t=hs6nYXqPslLgXS3F-1).**
 
-**Para visualizar o protótipo interativo, acesse o [Figma](https://www.figma.com/proto/eFmjXS9IOxnoHK4OETgjk4/Mermaid-NFT?node-id=4-5&p=f&t=egUqE1Xd0TRE0ZZm-1&scaling=scale-down&content-scaling=fixed&page-id=0%3A1).**
+## Funcionalidades
+
+O Mermaid NFT oferece diversas funcionalidades para gerenciar direitos autorais na indústria musical, incluindo registro, gestão, tokenização, compra/venda de tokens e a possibilidade de ouvir músicas. Explore o protótipo interativo para conhecer todos os detalhes.
 
 ## Arquitetura
 
